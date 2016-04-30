@@ -10,4 +10,4 @@ Knowing that there are a handful of circuit sims (with animations), this project
 3. [Why not?](http://i1.theportalwiki.net/img/a/a5/Cave_Johnson_fifties_fifth_test_complete09.wav)
 
 ## Tell me more...
-Should you be interested in this ambitious journey, then you can check out the [Documentation](https://github.com/seckwei/SirKit/edit/master/Documentation.md) of this project where I update my findings while undertaking this project. If for some reason you'd like to get in touch, do feel free to drop me an email - sirkit.js@gmail.com. :)
+Should you be interested in this ambitious journey, then you can check out the [Documentation](https://github.com/seckwei/SirKit/blob/master/Documentation.md) of this project where I update my findings while undertaking this project. If for some reason you'd like to get in touch, do feel free to drop me an email - sirkit.js@gmail.com. :)
