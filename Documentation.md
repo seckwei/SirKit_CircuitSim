@@ -57,7 +57,7 @@ Main take away: Remind yourself of the reason for doing the project, and what it
 While I was practising Nodal Analysis with various simple circuits, I came across a challenge - how do I write the KCL equation for a node with a branch that only has a voltage source i.e. a V-branch? Since the branch does not have (significant) resistance, how am I going to calculate the current in that branch?
 
 <center>
-![v-branch](Images/p4_Vbranch.JPG)
+![P4 V-branch](Images/p4_vbranch.jpg)
 <br>
 _Highlighted in red: V-Branch a.k.a. evil branch as said by L.R.Linares_
 </center>
