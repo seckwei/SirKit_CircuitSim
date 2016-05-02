@@ -68,6 +68,7 @@ Assuming the following circuit is what I am trying to solve:
 <center>
 ![P4 Circuit](Images/p4_simple-circuit.jpg)
 </center>
+
 KCL for Node 1: 
 <pre>
     -I + (V<sub>1</sub>-V<sub>2</sub>)/5 + (V<sub>1</sub>)/10   = 0
