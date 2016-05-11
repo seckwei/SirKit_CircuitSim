@@ -124,4 +124,5 @@ ___
 3. [DC/ACLab](http://dcaclab.com/en/home)
 4. [Krets](https://github.com/hraberg/krets) - Has load of external links too
 5. [Adobe 123D Circuits](https://123d.circuits.io/) - Nice graphics + Programmable Arduino = Mind blown
-6. [Thom Wright's Circuit Sim](https://github.com/circuitsim/circuit-simulator) - pretty cool, pretty UI 
+6. [Thom Wright's Circuit Sim](https://github.com/circuitsim/circuit-simulator) - pretty cool, pretty UI
+7. [Kazuhiko Arase's Circuit Sim](https://kazuhikoarase.github.io/simcirjs/) - Another cool HTML5/JS circuit sim
