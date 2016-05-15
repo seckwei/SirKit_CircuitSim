@@ -1,23 +1,24 @@
 /*
-	pin 0 - positive
-	pin 1 - negative
+	pin index 0 - positive
+	pin index 1 - negative
 */
 
 let Board = function Board(w, h) {
-	let width = 15,
-		height = 15,
-		board = new Array(width);
+	let width = w || 10,
+		height = h || 10;
 	
+	// Initialising empty board
+	let	board = new Array(width);
 	for(let row = 0; row < width; row++){
 		board[row] = new Array(height);
 	}
 	
-	// To place component pins into respective slots
+	// Place component pins into respective slots
 	function place(/*component, [x1,y1], [x2,y2], ...*/) {
 		let component = arguments[0],
-		    pins = arguments[1];
+		    pins = objectToArray(arguments[1]);
 		
-		Array.prototype.forEach.call(pins, (position, index) => {
+		pins.forEach((position, index) => {
 		    let x = position[0],
 				y = position[1];
 			
@@ -30,9 +31,19 @@ let Board = function Board(w, h) {
 		});
 	}
 	
+	function remove(component){
+		component.pins.forEach((position) => {
+			let x = position[0],
+				y = position[1];
+			
+			board[x][y].remove(component);
+		});
+	}
+	
 	return {
 		board: board,
-		place: place
+		place: place,
+		remove: remove
 	};
 };
 
@@ -44,24 +55,25 @@ let Slot = function Slot(x, y) {
     let V = 0, // voltage of this slot
 	    connected = new Map();
 	/*
-		key - component_id
-		value - {
-			pin,
+	    Connected Components Map Structure
+		component_id : {
+			pin_index,
 			object
 		}
 	*/
 	
-	// Count only non-disabled components
-	function connCount() {
+	// Count only non-disabled / active components
+	// This is used to determine true-nodes which has >= 3 active components
+	function activeCount() {
 		let count = 0;
 		connected.forEach((component)=> { 
-			if(!component.object.disabled) count++; 
+			if(component.object.active) count++; 
 		});
 		return count;
 	}
 	
 	// Count all components
-	function realCount() {
+	function count() {
 		return connected.size;
 	}
 	
@@ -83,16 +95,16 @@ let Slot = function Slot(x, y) {
 	
 	// Check if True node - more than 3 non-disabled components connected
 	function isTrueNode() {
-		return connCount() >= 3;
+		return activeCount() >= 3;
 	}
 	
 	return {
 		V: V,
 		x: () => x,
 		y: () => y,
-		get realCount() { return realCount(); },
-		get connCount() { return connCount(); },
-		get connections() { return connected; },
+		get count() { return count(); },
+		get activeCount() { return activeCount(); },
+		get connections() { return connected; }, // To do: Need to remove this as it's only for debugging
 		add: add,
 		remove: remove
 	};
@@ -100,43 +112,57 @@ let Slot = function Slot(x, y) {
 
 let Component = function Component(config) {
 	let id = (Date.now() + Math.random()).toString(),
-	    pins = [],
+	    pins = [], // locations of pins - [[x1,y1], [x2,y2]]
+		
 		type = config.type || 0 , // To do: Add component types
 	    label = config.label || 'Component-'+id,
+		
 		V = config.V || 0,
 		R = config.R || 0,
 		I = config.I || 0,
+		
 		openEnded = config.openEnded || false,
-		disabled = config.disabled || false,
+		active = config.active || true,
 		traveled = config.traveled || false;
 	
 	function place(/*[x1,y1], [x2,y2], ...*/) {
-		Array.prototype.forEach.call(arguments, (pin_position, index)=>{
-			pins[index] = pin_position;
-		});
+		let pin_positions = objectToArray(arguments);
+		
+		if(hasDuplicatePositions(pin_positions))
+			logger('Pins of the same component cannot share the same slot.');
+		
+		pins = pin_positions;
 		
 		if(!window.board)
 	        logger('Board not found!');
 		window.board.place(this, arguments);
 	}
 	
+	function remove(){
+		if(!window.board)
+	        logger('Board not found!');
+		debugger;
+		window.board.remove(this);
+	}
+	
 	return {
 		id : id,
 		type: type,
 		label : label,
-		pins : pins,
 		V: V, R: R,	I: I,
+		get pins() { return pins; },
 		get openEnded() { return openEnded; },
-		get disabled() { return disabled; },
-		set disabled(bool) { disabled = bool; },
+		get active() { return active; },
+		set active(bool) { active = bool; },
 		get traveled() { return traveled; },
 		set traveled(bool) { traveled = bool; },
-		place: place
+		place: place,
+		remove: remove
 	};
 };
 
 /*
-  Utility
+  Utility Functions
 */
 function isNumber(a) {
 	return !isNaN(parseInt(a));
@@ -147,18 +173,36 @@ function logger(message, severity){
 	throw new Error(message);
 }
 
+function objectToArray(obj){
+	return Array.prototype.slice.call(obj);
+}
+
+function hasDuplicatePositions(pins) {
+    let found = false
+	for(let left = 0; left < pins.length - 1; left++){
+		for(let right = left + 1; right < pins.length; right++){
+			if(pins[left][0] === pins[right][0] && pins[left][1] === pins[right][1])
+			    found = true;
+			    break;
+		}
+		if(found)
+			break;
+	}
+	return found;
+}
 
 /*
   Testing
 */
 (function init(global){
-	global.board = Board();
+	global.board = Board(15, 15);
 })(window || global);
 
 /*
-0,0 ---batt---
+0,0 
+    ---batt---
     |        |
-    |        |
+w1  |        | w2
     |        |
     ---ress---  10,10
 */
