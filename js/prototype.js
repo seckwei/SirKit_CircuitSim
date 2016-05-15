@@ -100,33 +100,15 @@ let Slot = function Slot(x, y) {
 
 let Component = function Component(config) {
 	let id = (Date.now() + Math.random()).toString(),
+	    pins = [],
 		type = config.type || 0 , // To do: Add component types
 	    label = config.label || 'Component-'+id,
-	    pins = [],
-		V, R, I,
-		openEnded = true || false,
-		disabled = true || false,
-		traveled = true || false;
-	
-	function isOpenEnded() {
-		return openEnded;
-	}
-	
-	function isDisabled() {
-		return disabled;
-	}
-	
-	function isTraveled() {
-		return traveled;
-	}
-	
-	function setDisabled(bool) {
-		disabled = bool;
-	}
-
-	function setTraveled(bool) {
-		traveled = bool;
-	}
+		V = config.V || 0,
+		R = config.R || 0,
+		I = config.I || 0,
+		openEnded = config.openEnded || false,
+		disabled = config.disabled || false,
+		traveled = config.traveled || false;
 	
 	function place(/*[x1,y1], [x2,y2], ...*/) {
 		Array.prototype.forEach.call(arguments, (pin_position, index)=>{
