@@ -1,17 +1,27 @@
 /*
 	pin index 0 - positive
 	pin index 1 - negative
+    
+    Probably need to redo the argument passing of positions to use
+    arrays e.g., [[0,0],[4,1]]
 */
 
 let Board = function Board(w, h) {
 	let width = w || 10,
 		height = h || 10;
 	
-	// Initialising empty board
+	// Initialise empty board
 	let	board = new Array(width);
 	for(let row = 0; row < width; row++){
 		board[row] = new Array(height);
 	}
+    
+    // Initialise Slot if position is undefined
+    function initSlot(x, y){
+        if(!board[x][y]){
+            board[x][y] = Slot(x,y);
+        }
+    }
 	
 	// Place component pins into respective slots
 	function place(/*component, [x1,y1], [x2,y2], ...*/) {
@@ -23,8 +33,7 @@ let Board = function Board(w, h) {
 				y = position[1];
 			
 			// Initialise to be a Slot if it is not one yet
-			if(!board[x][y])
-				board[x][y] = Slot(x,y);
+			initSlot(x,y);
 			
 			// Add the component to this Slot
 			board[x][y].add(component, index);
@@ -48,9 +57,11 @@ let Board = function Board(w, h) {
 };
 
 let Slot = function Slot(x, y) {
-	if(!isNumber(x) || !isNumber(y) || x < 0 || y < 0)
+	if(!isNumber(x) || !isNumber(y) || x < 0 || y < 0){
 		logger('x and y has to be positive numbers');
-	// To do: validate negatives
+    }
+    x = Math.floor(x);
+    y = Math.floor(y);
 	
     let V = 0, // voltage of this slot
 	    connected = new Map();
@@ -82,7 +93,7 @@ let Slot = function Slot(x, y) {
 		connected.set(
 			component.id, 
 			{ 
-				index: pin_index, 
+				pin: pin_index, 
 				object: component 
 			}
 		);
@@ -100,8 +111,8 @@ let Slot = function Slot(x, y) {
 	
 	return {
 		V: V,
-		x: () => x,
-		y: () => y,
+		get x() { return x; },
+		get y() { return y; },
 		get count() { return count(); },
 		get activeCount() { return activeCount(); },
 		get connections() { return connected; }, // To do: Need to remove this as it's only for debugging
@@ -178,12 +189,13 @@ function objectToArray(obj){
 }
 
 function hasDuplicatePositions(pins) {
-    let found = false
+    let found = false;
 	for(let left = 0; left < pins.length - 1; left++){
 		for(let right = left + 1; right < pins.length; right++){
-			if(pins[left][0] === pins[right][0] && pins[left][1] === pins[right][1])
+			if(pins[left][0] === pins[right][0] && pins[left][1] === pins[right][1]){
 			    found = true;
 			    break;
+            }
 		}
 		if(found)
 			break;
@@ -194,9 +206,9 @@ function hasDuplicatePositions(pins) {
 /*
   Testing
 */
-(function init(global){
+/* (function init(global){
 	global.board = Board(15, 15);
-})(window || global);
+})(window || global); */
 
 /*
 0,0 
@@ -206,7 +218,7 @@ w1  |        | w2
     |        |
     ---ress---  10,10
 */
-
+/* 
 let batt = Component({ label: 'batt' });
 batt.place([0,0],[10,0]);
 
@@ -218,3 +230,4 @@ wire2.place([10,0], [10,10]);
 
 let resistor = Component({ label: 'resistor' });
 resistor.place([0,10], [10,10]);
+ */
