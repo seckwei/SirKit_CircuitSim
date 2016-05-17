@@ -115,7 +115,7 @@ let Slot = function Slot(x, y) {
 		get y() { return y; },
 		get count() { return count(); },
 		get activeCount() { return activeCount(); },
-		get connections() { return connected; }, // To do: Need to remove this as it's only for debugging
+		get connections() { return connected; }, // Only for debugging and testing
 		add: add,
 		remove: remove
 	};
