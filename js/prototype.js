@@ -1,3 +1,5 @@
+'use strict';
+
 /*
 	pin index 0 - positive
 	pin index 1 - negative
@@ -116,6 +118,7 @@ let Slot = function Slot(x, y) {
 		get count() { return count(); },
 		get activeCount() { return activeCount(); },
 		get connections() { return connected; }, // Only for debugging and testing
+        get isTrueNode() { return isTrueNode(); },
 		add: add,
 		remove: remove
 	};

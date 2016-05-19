@@ -1,3 +1,5 @@
+'use strict';
+
 describe('Utility functions', function() {
 
     describe('isNumber()', function() {
@@ -84,12 +86,10 @@ describe('Sirkit\'s Topological Prototype', function() {
     beforeEach(function() {
         window.board = Board(2, 3);
         window.slot = Slot(0, 0);
-        window.cmpt1 = Component({
-            label: 'Component 1'
-        });
-        window.cmpt2 = Component({
-            label: 'Component 2'
-        });
+        
+        for(let i of [1,2,3]){
+            window['cmpt'+i] = Component({ label: 'Component'+i });
+        }
     });
 
     describe('Board object', function() {
@@ -163,38 +163,67 @@ describe('Sirkit\'s Topological Prototype', function() {
             expect(slot.connections.size).toBe(1);
             expect(slot.connections.get(cmpt1.id)).not.toBeDefined();
         });
-        
+
         it('should have the correct count of components in it', function() {
             expect(slot.count).toBe(0);
-            
-            slot.add(cmpt1,0);
+
+            slot.add(cmpt1, 0);
             expect(slot.count).toBe(1);
-            
-            slot.add(cmpt2,0);
+
+            slot.add(cmpt2, 0);
             expect(slot.count).toBe(2);
-            
+
             slot.remove(cmpt1);
             expect(slot.count).toBe(1);
-            
+
             slot.remove(cmpt2);
             expect(slot.count).toBe(0);
         });
 
-        it('should have the correct count of active components in it', function(){
+        it('should have the correct count of active components in it', function() {
             expect(slot.activeCount).toBe(0);
-            
-            slot.add(cmpt1,0); // add component 1
+
+            slot.add(cmpt1, 0); // add component 1
             expect(slot.activeCount).toBe(1);
-            
+
             cmpt1.active = false; // deactivate component 1
             expect(slot.activeCount).toBe(0);
-            
-            slot.add(cmpt2,0); // add component 2
+
+            slot.add(cmpt2, 0); // add component 2
             expect(slot.activeCount).toBe(1);
-            
+
             cmpt1.active = true; // re-activate component 1
             expect(slot.activeCount).toBe(2);
         })
+
+        it('isTrueNode should return true if the active components is >= 3', function() {
+            expect(slot.isTrueNode).toBe(false);
+            
+            slot.add(cmpt1, 0);
+            expect(slot.isTrueNode).toBe(false);
+            
+            slot.add(cmpt2, 0);
+            expect(slot.isTrueNode).toBe(false);
+            
+            slot.add(cmpt3, 0);
+            expect(slot.isTrueNode).toBe(true);
+        });
+    });
+    
+    describe('Component object',function(){
+        
+        it('should be placed into the right slots after calling place()', function(){
+            cmpt1.place([0,1], [1,2]);
+            expect(JSON.stringify(board.board[0][1].connections.get(cmpt1.id).object)).toBe(JSON.stringify(cmpt1));
+            expect(JSON.stringify(board.board[1][2].connections.get(cmpt1.id).object)).toBe(JSON.stringify(cmpt1));
+        });
+        
+        it('should be removed from the slots it was place into after calling remove()', function(){
+            cmpt1.place([0,1], [1,2]);
+            cmpt1.remove();
+            expect(board.board[0][1].connections.size).toBe(0);
+            expect(board.board[1][2].connections.size).toBe(0);
+        });
     });
 });
 
