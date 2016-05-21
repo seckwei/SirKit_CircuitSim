@@ -8,10 +8,7 @@
     arrays e.g., [[0,0],[4,1]]
 */
 
-let Board = function Board(w, h) {
-	let width = w || 10,
-		height = h || 10;
-	
+let Board = function Board(width = 10, height = 10) {	
 	// Initialise empty board
 	let	board = new Array(width);
 	for(let row = 0; row < width; row++){
@@ -26,11 +23,9 @@ let Board = function Board(w, h) {
     }
 	
 	// Place component pins into respective slots
-	function place(/*component, [x1,y1], [x2,y2], ...*/) {
-		let component = arguments[0],
-		    pins = objectToArray(arguments[1]);
-		
-		pins.forEach((position, index) => {
+	function place(component, positions) {
+        
+		positions.forEach((position, index) => {
 		    let x = position[0],
 				y = position[1];
 			
@@ -124,38 +119,34 @@ let Slot = function Slot(x, y) {
 	};
 };
 
-let Component = function Component(config) {
+let Component = function Component({   
+        type = 0,
+        label = undefined,
+        V = 0, R = 0, I = 0,
+        openEnded = false,
+        active = true,
+        traveled = false
+}) {
 	let id = (Date.now() + Math.random()).toString(),
-	    pins = [], // locations of pins - [[x1,y1], [x2,y2]]
+	    pins = []; // locations of pins - [[x1,y1], [x2,y2]]
 		
-		type = config.type || 0 , // To do: Add component types
-	    label = config.label || 'Component-'+id,
-		
-		V = config.V || 0,
-		R = config.R || 0,
-		I = config.I || 0,
-		
-		openEnded = config.openEnded || false,
-		active = config.active || true,
-		traveled = config.traveled || false;
+    label = label || 'Component-'+id;
 	
-	function place(/*[x1,y1], [x2,y2], ...*/) {
-		let pin_positions = objectToArray(arguments);
+	function place(...positions) {
 		
-		if(hasDuplicatePositions(pin_positions))
+		if(hasDuplicatePositions(positions))
 			logger('Pins of the same component cannot share the same slot.');
 		
-		pins = pin_positions;
+		pins = positions;
 		
 		if(!window.board)
 	        logger('Board not found!');
-		window.board.place(this, arguments);
+		window.board.place(this, positions);
 	}
 	
 	function remove(){
 		if(!window.board)
 	        logger('Board not found!');
-		debugger;
 		window.board.remove(this);
 	}
 	
