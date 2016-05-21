@@ -85,10 +85,10 @@ describe('Sirkit\'s Topological Prototype', function() {
 
     beforeEach(function() {
         window.board = Board(2, 3);
-        window.slot = Slot(0, 0);
+        window.slot = new Slot(0, 0);
         
         for(let i of [1,2,3]){
-            window['cmpt'+i] = Component({ label: 'Component'+i });
+            window['cmpt'+i] = new Component({ label: 'Component'+i });
         }
     });
 
@@ -130,19 +130,23 @@ describe('Sirkit\'s Topological Prototype', function() {
     describe('Slot object', function() {
 
         it('should be initialised with only positive numbers', function() {
-            let error_msg = 'x and y has to be positive numbers';
-            expect(Slot.bind(null, 0, -1)).toThrowError(error_msg);
-            expect(Slot.bind(null, -1, 0)).toThrowError(error_msg);
-            expect(Slot.bind(null, -1, -1)).toThrowError(error_msg);
-            expect(Slot.bind(null, 'b', '')).toThrowError(error_msg);
-            expect(Slot.bind(null, {}, [])).toThrowError(error_msg);
+            let error_msg = 'x and y has to be positive numbers',
+                Slot_IIFE = (x, y) => { 
+                    return () => { new Slot(x,y); }
+                };
+            
+            expect(Slot_IIFE(0,-1)).toThrowError(error_msg);
+            expect(Slot_IIFE(-1, 0)).toThrowError(error_msg);
+            expect(Slot_IIFE(-1, -1)).toThrowError(error_msg);
+            expect(Slot_IIFE('b', '')).toThrowError(error_msg);
+            expect(Slot_IIFE({}, [])).toThrowError(error_msg);
 
-            expect(Slot.bind(null, 0, 5)).not.toThrowError();
-            expect(Slot.bind(null, 0.333, 5.11)).not.toThrowError();
+            expect(Slot_IIFE(0, 5)).not.toThrowError();
+            expect(Slot_IIFE(0.333, 5.11)).not.toThrowError();
         });
 
         it('should floor x and y values when initialised', function() {
-            let slot = Slot(3.14159, 9.99);
+            let slot = new Slot(3.14159, 9.99);
             expect(slot.x).toBe(3);
             expect(slot.y).toBe(9);
         });

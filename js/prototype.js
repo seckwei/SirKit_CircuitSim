@@ -18,7 +18,7 @@ let Board = function Board(width = 10, height = 10) {
     // Initialise Slot if position is undefined
     function initSlot(x, y){
         if(!board[x][y]){
-            board[x][y] = Slot(x,y);
+            board[x][y] = new Slot(x,y);
         }
     }
 	
@@ -53,41 +53,51 @@ let Board = function Board(width = 10, height = 10) {
 	};
 };
 
-let Slot = function Slot(x, y) {
-	if(!isNumber(x) || !isNumber(y) || x < 0 || y < 0){
-		logger('x and y has to be positive numbers');
+class Slot {
+    constructor(x, y) {
+        if(!isNumber(x) || !isNumber(y) || x < 0 || y < 0){
+            logger('x and y has to be positive numbers');
+        }
+        this.x = Math.floor(x);
+        this.y = Math.floor(y);
+        this.V = 0; // voltage through this slot
+        this.connected = new Map();
+        /*  Connected Components Map Structure
+            component_id : {
+                pin,    // index
+                object  // component itself
+            }
+        */
     }
-    x = Math.floor(x);
-    y = Math.floor(y);
-	
-    let V = 0, // voltage of this slot
-	    connected = new Map();
-	/*
-	    Connected Components Map Structure
-		component_id : {
-			pin_index,
-			object
-		}
-	*/
-	
-	// Count only non-disabled / active components
+    
+    // Count all components
+	get count() {
+		return this.connected.size;
+	}
+    
+    // Count only non-disabled / active components
 	// This is used to determine true-nodes which has >= 3 active components
-	function activeCount() {
-		let count = 0;
-		connected.forEach((component)=> { 
+    get activeCount() {
+        let count = 0;
+		this.connected.forEach((component) => { 
 			if(component.object.active) count++; 
 		});
 		return count;
+    }
+    
+    // Map with all connections
+    get connections() {
+        return this.connected;
+    }
+    
+    // Check if True node - more than 3 non-disabled components connected
+	get isTrueNode() {
+		return this.activeCount >= 3;
 	}
-	
-	// Count all components
-	function count() {
-		return connected.size;
-	}
-	
-	// Add component
-	function add(component, pin_index) {
-		connected.set(
+    
+    // Add component
+    add(component, pin_index) {
+		this.connected.set(
 			component.id, 
 			{ 
 				pin: pin_index, 
@@ -95,76 +105,57 @@ let Slot = function Slot(x, y) {
 			}
 		);
 	}
-	
-	// Remove component
-	function remove(component) {
-		connected.delete(component.id);
+    
+    // Remove component
+	remove(component) {
+		this.connected.delete(component.id);
 	}
-	
-	// Check if True node - more than 3 non-disabled components connected
-	function isTrueNode() {
-		return activeCount() >= 3;
-	}
-	
-	return {
-		V: V,
-		get x() { return x; },
-		get y() { return y; },
-		get count() { return count(); },
-		get activeCount() { return activeCount(); },
-		get connections() { return connected; }, // Only for debugging and testing
-        get isTrueNode() { return isTrueNode(); },
-		add: add,
-		remove: remove
-	};
-};
+}
 
-let Component = function Component({   
-        type = 0,
-        label = undefined,
-        V = 0, R = 0, I = 0,
-        openEnded = false,
-        active = true,
-        traveled = false
-}) {
-	let id = (Date.now() + Math.random()).toString(),
-	    pins = []; // locations of pins - [[x1,y1], [x2,y2]]
-		
-    label = label || 'Component-'+id;
-	
-	function place(...positions) {
-		
-		if(hasDuplicatePositions(positions))
+const ComponentDefault = {   
+    type : 0,
+    label : undefined,
+    V : 0, R : 0, I : 0,
+    openEnded : false,
+    active : true,
+    traveled : false
+};
+class Component {
+    constructor({   type = 0, 
+                    label = undefined, 
+                    V = 0, R = 0, I = 0, 
+                    openEnded = false, 
+                    active = true, 
+                    traveled = false } = ComponentDefault)
+    {
+        this.id = (Date.now() + Math.random()).toString();
+        this.label = label || 'Component-'+ this.id;
+        this.V = V;
+        this.R = R;
+        this.I = I;
+        this.openEnded = openEnded;
+        this.active = active;
+        this.traveled = traveled;
+        this.pins = [];
+    }
+    
+    place(...positions) {
+        if(hasDuplicatePositions(positions))
 			logger('Pins of the same component cannot share the same slot.');
 		
-		pins = positions;
+		this.pins = positions;
 		
 		if(!window.board)
 	        logger('Board not found!');
 		window.board.place(this, positions);
-	}
-	
-	function remove(){
-		if(!window.board)
+    }
+    
+    remove() {
+        if(!window.board)
 	        logger('Board not found!');
 		window.board.remove(this);
-	}
-	
-	return {
-		id : id,
-		type: type,
-		label : label,
-		V: V, R: R,	I: I,
-		get pins() { return pins; },
-		get openEnded() { return openEnded; },
-		get active() { return active; },
-		set active(bool) { active = bool; },
-		get traveled() { return traveled; },
-		set traveled(bool) { traveled = bool; },
-		place: place,
-		remove: remove
-	};
-};
+    }
+}
 
 /*
   Utility Functions
