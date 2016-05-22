@@ -84,18 +84,27 @@ describe('Utility functions', function() {
 describe('Sirkit\'s Topological Prototype', function() {
 
     beforeEach(function() {
-        window.board = Board(2, 3);
+        window.board_width = 10;
+        window.board_height = 10;
+        
+        window.board = Board(10, 10);
         window.slot = new Slot(0, 0);
         
-        for(let i of [1,2,3]){
-            window['cmpt'+i] = new Component({ label: 'Component'+i });
+        let num_of_components = 5
+        while(num_of_components--){
+            window['cmpt' + num_of_components] = new Component({ label: 'Component'+ num_of_components });
         }
+        
+        window.traverser = Traverser();
     });
 
     describe('Board object', function() {
 
         it('should return an object with 2D array with undefined values if provided width and height', function() {
-            let emptyBoard = [new Array(3), new Array(3)];
+            let emptyBoard = new Array(window.board_width);
+            for(let col = 0; col < window.board_height; col++){
+                emptyBoard[col] = new Array(window.board_height);
+            }
             expect(board.board).toEqual(emptyBoard);
         });
 
@@ -125,6 +134,17 @@ describe('Sirkit\'s Topological Prototype', function() {
             expect(slot11_connections.size).toBe(0);
         });
 
+        it('should keep track of occupied slots', function(){
+            expect(board.occupiedSlots.size).toEqual(0);
+            cmpt1.place([0,0], [1,1]);
+            
+            expect(board.occupiedSlots.size).toBe(2);
+            expect(JSON.stringify(board.occupiedSlots.get('0,0')))
+                .toEqual(JSON.stringify(board.board[0][0]));
+            
+            cmpt1.remove();
+            expect(board.occupiedSlots.size).toBe(0);
+        });
     });
 
     describe('Slot object', function() {
@@ -228,7 +248,82 @@ describe('Sirkit\'s Topological Prototype', function() {
             expect(board.board[0][1].connections.size).toBe(0);
             expect(board.board[1][2].connections.size).toBe(0);
         });
+        
+        it('getOtherPins should return an array of all pins except the one passed in', function(){
+            cmpt1.place([0,0], [1,1]);
+            expect(cmpt1.getOtherPins([0,0])).toEqual([[1,1]]);
+        });
     });
+});
+
+describe('Sirkit\'s Traverser Prototype',function(){
+
+    beforeEach(function() {
+        window.board_width = 10;
+        window.board_height = 10;
+        
+        window.board = Board(10, 10);
+        window.slot = new Slot(0, 0);
+        
+        let num_of_components = 5
+        while(num_of_components--){
+            window['cmpt' + num_of_components] = new Component({ label: 'Component'+ num_of_components });
+        }
+        
+        window.traverser = Traverser();
+    });
+    
+    describe('private method _deactivateOpenBranches()', function(){
+        /*
+            Branch with an open-end ends with a non-open-ended component.
+            e.g. a resistor that is connected to a closed-circuit on one end but not on the other.
+            
+            Branch without an open-end ends with an open-ended component (e.g. ground) OR
+            the branch is connected to a closed circuit on both ends.
+        */
+        it('should deactivate branches with an open-end', function(){
+            // Components are non-open-ended and active by default
+            cmpt1.place([0,0], [0,2]);
+            cmpt2.place([1,0], [1,2]);
+            cmpt3.place([1,0], [2,2]); // cmpt3 connected to cmpt2, but they are still open-ended
+
+            let arr = [1,2,3];
+
+            for(let i of arr){
+                expect(window['cmpt'+i].active).toBe(true);
+            }
+
+            traverser._deactivateOpenBranches(board);
+
+            for(let i of arr){
+                expect(window['cmpt'+i].active).toBe(false);
+            }
+        });
+
+        it('should NOT deactivate branches without an open-end', function(){
+            // Closed circuit
+            cmpt1.place([0,0], [0,2]);
+            cmpt2.place([0,2], [1,2]);
+            cmpt3.place([1,2], [0,0]);
+
+            // Open ended component
+            cmpt4.place([5,5],[6,6]);
+            cmpt4.openEnded = true;
+
+            let arr = [1,2,3,4];
+
+            for(let i of arr){
+                expect(window['cmpt'+i].active).toBe(true);
+            }
+
+            traverser._deactivateOpenBranches(board);
+
+            for(let i of arr){
+                expect(window['cmpt'+i].active).toBe(true);
+            }
+        });
+    });
+
 });
 
 /*
