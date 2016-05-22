@@ -15,7 +15,9 @@ let Board = function Board(width = 10, height = 10) {
 		board[row] = new Array(height);
 	}
     
-    // Initialise Slot if position is undefined
+    let occupiedSlots = new Map();
+    
+    // Private - Initialise Slot if position is undefined
     function initSlot(x, y){
         if(!board[x][y]){
             board[x][y] = new Slot(x,y);
@@ -23,6 +25,7 @@ let Board = function Board(width = 10, height = 10) {
     }
 	
 	// Place component pins into respective slots
+    // positions is a 2D array e.g. [[0,1], [1,1]]
 	function place(component, positions) {
         
 		positions.forEach((position, index) => {
@@ -34,22 +37,45 @@ let Board = function Board(width = 10, height = 10) {
 			
 			// Add the component to this Slot
 			board[x][y].add(component, index);
+            
+            // Add to occupiedSlots
+            addOccupiedSlot(position);
 		});
 	}
 	
+    // Remove component pins from their slot
 	function remove(component){
 		component.pins.forEach((position) => {
 			let x = position[0],
 				y = position[1];
 			
 			board[x][y].remove(component);
+            
+            if(board[x][y].count === 0){
+                removeOccupiedSlot(position);
+            }
 		});
 	}
+    
+    // Private - Add to list of occupied slots, if havent already
+    function addOccupiedSlot(pos){
+        if(!occupiedSlots.has(pos.toString())){
+            occupiedSlots.set(pos.toString(), board[pos[0]][pos[1]]);
+        }
+    }
+    
+    // Private - Remove from the list of occupied slots
+    function removeOccupiedSlot(pos){
+        if(occupiedSlots.has(pos.toString())){
+            occupiedSlots.delete(pos.toString());
+        }
+    }
 	
 	return {
 		board: board,
+        occupiedSlots: occupiedSlots,
 		place: place,
-		remove: remove
+		remove: remove,
 	};
 };
 
@@ -154,6 +180,13 @@ class Component {
         if(!window.board)
 	        logger('Board not found!');
 		window.board.remove(this);
+    }   
+    
+    // Get all pins except the one given
+    getOtherPins(pos) {
+        return this.pins.filter((pinPos) => {
+            return !(pinPos.toString() === pos.toString());
+        });
     }
 }
 
@@ -204,15 +237,15 @@ w1  |        | w2
     ---ress---  10,10
 */
 /* 
-let batt = Component({ label: 'batt' });
+let batt = new Component({ label: 'batt' });
 batt.place([0,0],[10,0]);
 
-let wire1 = Component({ label: 'wire 1' });
+let wire1 = new Component({ label: 'wire 1' });
 wire1.place([0,0], [0,10]);
 
-let wire2 = Component({ label: 'wire 2' });
+let wire2 = new Component({ label: 'wire 2' });
 wire2.place([10,0], [10,10]);
 
-let resistor = Component({ label: 'resistor' });
+let resistor = new Component({ label: 'resistor' });
 resistor.place([0,10], [10,10]);
  */
