@@ -4,7 +4,6 @@ let Traverser = function Traverser() {
 
     // Private - To deactivate all open-ended branches
     function deactivateOpenBranches(board) {
-        let otherPos = [];
         board.occupiedSlots.forEach((slot) => {
             deactivateOpenEnds(board, slot);
         });
@@ -40,7 +39,7 @@ let Traverser = function Traverser() {
         }
     }
     
-    // Private - Error if no source component found
+    // Private - Error if no ground component found
     function checkGroundExists(board) {
         if(!board.hasType(ComponentType.Ground)){
             throw new Error('No ground component found!');
@@ -56,7 +55,7 @@ let Traverser = function Traverser() {
         // We have to find a list of active Sources, so we can start traversing!
         let activeSources = board.activeSources;
         
-        // The source component might be deactivated due to being on an open branch
+        // The source component(s) might be deactivated due to being on an open branch
         // so that counts as an open circuit too
         if(activeSources.length === 0){
             throw new Error('Closed circuit not found');
@@ -82,24 +81,24 @@ let Traverser = function Traverser() {
         
         console.log('START OF TRAVERSAL');
         
-        checkBackAtSource(board, currentPos);
+        checkBackAtSource(currentPos);
         
-        function checkBackAtSource(board, pos) {
+        function checkBackAtSource(pos) {
             // yes, mark closed then find unfinishedNode
             if(pos.toString() === negativePinPos.toString()){
                 board.closed = true;
-                findUnfinishedNode(board);
+                findUnfinishedNode();
             }
             // no, isTrueNode
             else {
-                checkTrueNode(board, pos);
+                checkTrueNode(pos);
             }
         };
         
-        function findUnfinishedNode(board) {
+        function findUnfinishedNode() {
             // yes, backToLastNode
             if(board.hasUnfinishedNode){
-                backToLastNode(board);
+                backToLastNode();
             }
             // no, end traversal
             else {
@@ -108,12 +107,12 @@ let Traverser = function Traverser() {
             }
         }
         
-        function backToLastNode(board) {
+        function backToLastNode() {
             let lastNodePos = nodeTrace[nodeTrace.length-1];
-            findUntraveledConnections(board, lastNodePos);
+            findUntraveledConnections(lastNodePos);
         }
         
-        function findUntraveledConnections(board, pos) {
+        function findUntraveledConnections(pos) {
             debugger;
             let connection = board.getSlot(pos).untraveledConnections[0];
             // yes, pickAnyConnection
@@ -121,19 +120,19 @@ let Traverser = function Traverser() {
                 let nextPos = connection.component.pins[connection.pin];
                 
                 connection.component.traveled = true;
-                goNextSlot(board, nextPos);
+                goNextSlot(nextPos);
             }
             // no, popNodeTrace
             else {
                 nodeTrace.pop();
-                findUnfinishedNode(board);
+                findUnfinishedNode();
             }
         }
         
-        function checkTrueNode(board, pos) {
+        function checkTrueNode(pos) {
             // yes, existsInTrace
             if(board.getSlot(pos).isTrueNode){
-                existsInTrace(board, pos);
+                existsInTrace(pos);
             }
             // no, goNextSlot
             else {
@@ -141,14 +140,14 @@ let Traverser = function Traverser() {
                     nextPos = connection.component.getOtherPins(pos)[0];
                 
                 connection.component.traveled = true;
-                goNextSlot(board, nextPos);
+                goNextSlot(nextPos);
             }
         }
         
-        function existsInTrace(board, pos) {
+        function existsInTrace(pos) {
             // yes, backToLastNode
             if(nodeTrace.find((node) => node.toString() === pos.toString())){
-                backToLastNode(board);
+                backToLastNode();
             }
             // no, pushNodeTrace
             else {
@@ -159,12 +158,12 @@ let Traverser = function Traverser() {
                     nextPos = component.getOtherPins(component.pins[connection.pin])[0];
                 
                 component.traveled = true;
-                goNextSlot(board, nextPos);
+                goNextSlot(nextPos);
             }
         }
         
-        function goNextSlot(board, nextPos) {
-            checkBackAtSource(board, nextPos);
+        function goNextSlot(nextPos) {
+            checkBackAtSource(nextPos);
         }
     }
     
