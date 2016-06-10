@@ -3,13 +3,13 @@
 describe('Sirkit', function() {
     
     beforeEach(function() {
-        window.board_width = 10;
-        window.board_height = 10;
+        window.board_width = 100;
+        window.board_height = 100;
 
-        window.board = Board(10, 10);
+        window.board = Board(board_width, board_height);
         window.slot = new Slot([0,0]);
 
-        let num_of_components = 10;
+        let num_of_components = 50;
         while (num_of_components-- !== 1) {
             window['wire' + num_of_components] = new Component({
                 label: 'Wire' + num_of_components,
@@ -502,6 +502,7 @@ describe('Sirkit', function() {
                 wire1.place([0, 2], [0, 3]);
                 wire2.place([1, 0], [0, 0]);
                 wire3.place([2, 0], [2, 1]);
+                ground1.place([2, 1], [2, 5]);
 
                 expect(traverser._checkClosedCircuit.bind(null, board)).toThrowError('Closed circuit not found');
                 expect(board.closed).toBe(false);
@@ -512,6 +513,7 @@ describe('Sirkit', function() {
                 batt1.place([0, 0], [0, 1]);
                 wire2.place([0, 1], [1, 1]);
                 wire3.place([1, 1], [0, 0]);
+                ground1.place([0, 0], [5, 5]);
 
                 // One stray component
                 wire4.place([4, 5], [5, 6]);
@@ -521,6 +523,7 @@ describe('Sirkit', function() {
                 expect(batt1.traveled).toBe(true);
                 expect(wire2.traveled).toBe(true);
                 expect(wire3.traveled).toBe(true);
+                expect(ground1.traveled).toBe(true);
                 
                 expect(wire4.traveled).toBe(false);
             });
@@ -536,17 +539,75 @@ describe('Sirkit', function() {
                 wire4.place(node2, [6,8]);
                 wire5.place(node1, node2);
                 wire6.place([2,8], [6,8]);
+                ground1.place([6,8], [6,10]);
                 
                 /*  B+ ---wire1---+---wire2---+
                     |             |           |
                     |batt1        |wire5      |wire6
                     |             |           |
-                    B- ---wire3---+---wire4---+
+                    B- ---wire3---+---wire4---+---GND
                 */
                 
                 expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
                 expect(batt1.traveled).toBe(true);
+                expect(ground1.traveled).toBe(true);
                 for(let i of [1,2,3,4,5,6]){
+                    expect(window['wire'+i].traveled).toBe(true);
+                }                
+                expect(board.closed).toBe(true);
+            });
+            
+            it('should work for more than one circuits', function(){
+                // Circuit 1
+                let node1 = [2,5],
+                    node2 = [6,5];
+                
+                batt1.place([2,2], [6,2]);
+                wire1.place([2,2], node1);
+                wire2.place(node1, [2,8]);
+                wire3.place([6,2], node2);
+                wire4.place(node2, [6,8]);
+                wire5.place(node1, node2);
+                wire6.place([2,8], [6,8]);
+                ground1.place([6,8], [6,10]);
+                
+                /*  B+ ---wire1---+---wire2---+
+                    |             |           |
+                    |batt1        |wire5      |wire6
+                    |             |           |
+                    B- ---wire3---+---wire4---+---GND
+                */
+                
+                expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
+                expect(batt1.traveled).toBe(true);
+                expect(ground1.traveled).toBe(true);
+                for(let i of [1,2,3,4,5,6]){
+                    expect(window['wire'+i].traveled).toBe(true);
+                }
+                
+                // Circuit 2
+                let node3 = [12,15],
+                    node4 = [16,15];
+                
+                batt2.place([12,12], [16,12]);
+                wire7.place([12,12], node1);
+                wire8.place(node1, [12,18]);
+                wire9.place([16,12], node2);
+                wire10.place(node2, [16,18]);
+                wire11.place(node1, node2);
+                wire12.place([12,18], [16,18]);
+                ground2.place([16,18], [16,20]);
+                
+                /*  B+ ---wire6---+---wire8---+
+                    |             |           |
+                    |batt2        |wire11     |wire12
+                    |             |           |
+                    B- ---wire9---+---wire10--+---GND
+                */
+                expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
+                expect(batt2.traveled).toBe(true);
+                expect(ground2.traveled).toBe(true);
+                for(let i of [7,8,9,10,11,12]){
                     expect(window['wire'+i].traveled).toBe(true);
                 }
             });
