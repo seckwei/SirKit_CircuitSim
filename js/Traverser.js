@@ -8,7 +8,7 @@ let Traverser = function Traverser() {
             deactivateOpenEnds(board, slot);
         });
     }
-    
+
     // Private - Given a slot, we see if the component connected to it needs deactivating or not
     function deactivateOpenEnds(board, slot) {
         if (slot.activeCount === 1) {
@@ -16,7 +16,7 @@ let Traverser = function Traverser() {
                                     .next().value,                   // getting the only value in that Map
                 component = pinAndComponent.component,
                 pin = pinAndComponent.pin;
-            
+
             let otherPins = component.getOtherPins([slot.x, slot.y]);
 
             /*  If the component is NOT open ended AND active, deactivate
@@ -38,135 +38,136 @@ let Traverser = function Traverser() {
             throw new Error('No source component found!');
         }
     }
-    
+
     // Private - Error if no ground component found
     function checkGroundExists(board) {
         if(!board.hasType(ComponentType.Ground)){
             throw new Error('No ground component found!');
         }
     }
-    
+
     // Private - Report if circuit is not closed
     function checkClosedCircuit(board) {
         checkSourceExists(board);
         //checkGroundExists(board);
         deactivateOpenBranches(board);
-        
+
         // We have to find a list of active Sources, so we can start traversing!
         let activeSources = board.activeSources;
-        
+
         // The source component(s) might be deactivated due to being on an open branch
         // so that counts as an open circuit too
         if(activeSources.length === 0){
             throw new Error('Closed circuit not found');
         }
-        
-        // Start traversal for each source components
+
+        // Start traversal from each source components
         activeSources.forEach((source)=>{
             traverseSource(board, source);
         });
     }
-    
+
     function traverseSource(board, source) {
+        // Note: This is code is assuming that the source has two pins
+
+        // Exit if this source has been traveled already
         if(source.traveled){
             return;
         }
         source.traveled = true;
 
-        let positivePinPos = source.pins[0],
-            negativePinPos = source.pins[1],
-            currentPos = positivePinPos;
+        // Store the negative pin positions of the source so we can tell if we are back at source later
+        let currentPos = source.pins[0],
+            negativePinPos = source.pins[1];
 
+        // This acts like a 'stack', storing the most recent traveled node
         let nodeTrace = [];
-        
+
         console.log('START OF TRAVERSAL');
-        
+
+        // Start traversing from the source
         checkBackAtSource(currentPos);
-        
+
+        // Check to see if we're back at the source component
         function checkBackAtSource(pos) {
-            // yes, mark closed then find unfinishedNode
             if(pos.toString() === negativePinPos.toString()){
                 board.closed = true;
                 findUnfinishedNode();
             }
-            // no, isTrueNode
             else {
                 checkTrueNode(pos);
             }
         };
-        
+
+        // Find node(s) that has untraveled connection(s)
         function findUnfinishedNode() {
-            // yes, backToLastNode
             if(board.hasUnfinishedNode){
                 backToLastNode();
             }
-            // no, end traversal
             else {
                 console.log('END OF TRAVERSAL', nodeTrace);
                 return true;
             }
         }
-        
+
+        // Jump back to the most recent traveled node
         function backToLastNode() {
             let lastNodePos = nodeTrace[nodeTrace.length-1];
             findUntraveledConnections(lastNodePos);
         }
-        
+
+        // Find the untraveled connection(s) in a position/node
         function findUntraveledConnections(pos) {
-            debugger;
             let connection = board.getSlot(pos).untraveledConnections[0];
-            // yes, pickAnyConnection
-            if(!!connection){
+
+            if(!!connection){ // Found
                 let nextPos = connection.component.pins[connection.pin];
-                
                 connection.component.traveled = true;
                 goNextSlot(nextPos);
             }
-            // no, popNodeTrace
-            else {
+            else { // Not found
                 nodeTrace.pop();
                 findUnfinishedNode();
             }
         }
-        
+
+        // Check if this position is a true node or not
         function checkTrueNode(pos) {
-            // yes, existsInTrace
             if(board.getSlot(pos).isTrueNode){
                 existsInTrace(pos);
             }
-            // no, goNextSlot
             else {
                 let connection = board.getSlot(pos).untraveledConnections[0],
                     nextPos = connection.component.getOtherPins(pos)[0];
-                
+
                 connection.component.traveled = true;
                 goNextSlot(nextPos);
             }
         }
-        
+
+        // Check if this position/node exists in the trace already or not
         function existsInTrace(pos) {
-            // yes, backToLastNode
             if(nodeTrace.find((node) => node.toString() === pos.toString())){
                 backToLastNode();
             }
-            // no, pushNodeTrace
             else {
                 nodeTrace.push(pos);
-                
+
                 let connection = board.getSlot(pos).untraveledConnections[0],
                     component = connection.component,
                     nextPos = component.getOtherPins(component.pins[connection.pin])[0];
-                
+
                 component.traveled = true;
                 goNextSlot(nextPos);
             }
         }
-        
+
+        // Move onto the next position
         function goNextSlot(nextPos) {
             checkBackAtSource(nextPos);
         }
     }
-    
+
     // Public
     function start(board) {
         checkSourceExists(board);
