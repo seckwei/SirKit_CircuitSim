@@ -58,21 +58,6 @@ describe('Sirkit', function() {
 
         });
 
-        describe('objectToArray()', function() {
-
-            it('should convert object to array type', function() {
-                expect(objectToArray({})).toEqual([]);
-                expect(objectToArray({}) instanceof Array).toBe(true);
-                expect(objectToArray({})).not.toEqual({});
-            });
-
-            it('should conver array-like objects to array with the values retained', function() {
-                (function() {
-                    expect(objectToArray(arguments)).toEqual([1, 2, 3]);
-                })(1, 2, 3);
-            });
-        });
-
         describe('logger()', function() {
 
             it('should throw an Error', function() {

@@ -1,31 +1,39 @@
-/*
-  Utility Functions
-*/
-function isNumber(a) {
-	return !isNaN(parseInt(a));
+
+/**
+ * Collection of utility functions
+ * @namespace Utility
+ */
+
+/**
+ * Returns true if argument is a number
+ * 
+ * @param {any} input
+ * @returns {boolean}
+ */
+function isNumber(input) {
+	return !isNaN(parseInt(input));
 }
 
+/**
+ * Todo: Logs an error message along with its severity
+ * 
+ * @param {string} message
+ * @param {number} severity
+ */
 function logger(message, severity){
 	// To do: do something with severity
 	throw new Error(message);
 }
 
-function objectToArray(obj){
-	return Array.prototype.slice.call(obj);
-}
 
-// Readability can be improved by using Array.find()
+/**
+ * Return true if duplicate pins are found
+ * 
+ * @param {Array} pins e.g. [[1,1], [2,2], [4,4]]
+ * @returns {boolean}
+ */
 function hasDuplicatePositions(pins) {
-    let found = false;
-	for(let left = 0; left < pins.length - 1; left++){
-		for(let right = left + 1; right < pins.length; right++){
-			if(pins[left][0] === pins[right][0] && pins[left][1] === pins[right][1]){
-			    found = true;
-			    break;
-            }
-		}
-		if(found)
-			break;
-	}
-	return found;
+    return pins
+			.map(pin => pin.toString())
+			.some((pin, index, arr) => index !== arr.lastIndexOf(pin));
 }
