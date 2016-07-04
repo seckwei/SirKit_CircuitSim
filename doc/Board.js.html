@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Board.js - Documentation</title>
+
+    <script src="scripts/prettify/prettify.js"></script>
+    <script src="scripts/prettify/lang-css.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc.css">
+</head>
+<body>
+
+<input type="checkbox" id="nav-trigger" class="nav-trigger" />
+<label for="nav-trigger" class="navicon-button x">
+  <div class="navicon"></div>
+</label>
+
+<label for="nav-trigger" class="overlay"></label>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Board.html">Board</a><ul class='methods'><li data-type='method'><a href="module-Board.html#Board">Board</a></li><li data-type='method'><a href="module-Board.html#getActiveSources">getActiveSources</a></li><li data-type='method'><a href="module-Board.html#hasType">hasType</a></li><li data-type='method'><a href="module-Board.html#hasUnfinishedNode">hasUnfinishedNode</a></li><li data-type='method'><a href="module-Board.html#place">place</a></li><li data-type='method'><a href="module-Board.html#remove">remove</a></li></ul></li><li><a href="module-Component.html">Component</a><ul class='methods'><li data-type='method'><a href="module-Component.html#getOtherPins">getOtherPins</a></li><li data-type='method'><a href="module-Component.html#place">place</a></li><li data-type='method'><a href="module-Component.html#remove">remove</a></li></ul></li><li><a href="module-Slot.html">Slot</a><ul class='methods'><li data-type='method'><a href="module-Slot.html#add">add</a></li><li data-type='method'><a href="module-Slot.html#remove">remove</a></li></ul></li><li><a href="module-Utility.html">Utility</a><ul class='methods'><li data-type='method'><a href="module-Utility.html#.hasDuplicatePositions">hasDuplicatePositions</a></li><li data-type='method'><a href="module-Utility.html#.isNumber">isNumber</a></li><li data-type='method'><a href="module-Utility.html#.logger">logger</a></li></ul></li></ul>
+</nav>
+
+<div id="main">
+    
+    <h1 class="page-title">Board.js</h1>
+    
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Board module
+ * @module Board
+ * @property {Map}      occupiedSlots   List of occupied slots on the board
+ * @property {Map}      components      List of components on the board
+ * @property {boolean}  closed          Indicates whether the circuit on the board is closed or not
+ */
+
+'use strict';
+
+/*
+    pin index 0 - positive
+    pin index 1 - negative
+*/
+
+
+/**
+ * Board
+ * 
+ * @instance
+ * @param {number} [width=10] Width of the board - 0 indexed
+ * @param {number} [height=10] Height of the board - 0 indexed
+ * @returns {Board}
+ * 
+ * @example
+ * let board = Board(100, 100);
+ */
+let Board = function Board(width = 10, height = 10) {	
+    // Initialise empty board
+    let	board = Array.apply(null, { length: width });
+    board = board.map(() => {
+        return Array.apply(null, { length: height });
+    });
+    
+    let occupiedSlots = new Map(),
+        components = new Map();
+    
+    
+    let closed = false;
+    
+    /**
+     * Initialise a Slot if it hasn't already been done.
+     * 
+     * @private
+     * @method initSlot
+     * @param {Array} pos e.g. [1,1]
+     */
+    function initSlot(pos){
+        let [x,y] = pos;
+        if(!board[x][y]){
+            board[x][y] = new Slot(pos);
+        }
+    }
+    
+    /**
+     * Return the slot specified by the position given
+     * 
+     * @private
+     * @method getSlot
+     * @param {Array} pos
+     * @returns {Slot}
+     */
+    function getSlot(pos){
+        return board[pos[0]][pos[1]];
+    }
+    
+    /**
+     * Place Component pins into respective Slots &lt;br>
+     * Uses [Slot#add]{@link module:Slot#add}
+     * 
+     * @protected
+     * @instance
+     * @method place
+     * @param {Component} component
+     * @param {Array} positions
+     * @see Use [Component#place]{@link module:Component#place} method instead
+     */
+    function place(component, positions) {
+        
+        positions.forEach((position, index) => {			
+            // Initialise to be a Slot if it is not one yet
+            initSlot(position);
+            
+            // Add the component to this Slot
+            getSlot(position).add(component, index);
+            
+            // Add to occupiedSlots
+            addOccupiedSlot(position);
+        });
+        
+        addComponent(component);
+    }
+    
+    /**
+     * Remove Component from its Slots &lt;br>
+     * Uses [Slot#remove]{@link module:Slot#remove}
+     * 
+     * @protected
+     * @instance
+     * @method remove
+     * @param {Component} component
+     * @see Use [Component#remove]{@link module:Component#remove} method
+     */
+    function remove(component){
+        component.pins.forEach((position) => {
+            
+            let slot = getSlot(position);
+            slot.remove(component);
+            
+            if(slot.count === 0){
+                removeOccupiedSlot(position);
+            }
+        });
+        
+        removeComponent(component);
+    }
+    
+    /**
+     * Adds a position to a list of occupied Slots
+     * 
+     * @private
+     * @method addOccupiedSlot
+     * @param {Array} pos
+     */
+    function addOccupiedSlot(pos){
+        if(!occupiedSlots.has(pos.toString())){
+            occupiedSlots.set(pos.toString(), board[pos[0]][pos[1]]);
+        }
+    }
+
+    /**
+     * Remove position from the list of occupied Slots
+     * 
+     * @private
+     * @method removeOccupiedSlot
+     * @param {Array} pos
+     */
+    function removeOccupiedSlot(pos){
+        if(occupiedSlots.has(pos.toString())){
+            occupiedSlots.delete(pos.toString());
+        }
+    }
+    
+    /**
+     * Add Component to list of components on the Board
+     * 
+     * @private
+     * @method addComponent
+     * @param {Component} component
+     */
+    function addComponent(component){
+        if(!components.has(component.id)){
+            components.set(component.id, component);
+        }
+    }
+    
+    /**
+     * Remove Component from list of components on the Board
+     * 
+     * @private
+     * @method removeComponent
+     * @param {Component} component
+     */
+    function removeComponent(component){
+        if(components.has(component.id)){
+            components.delete(component.id, component);
+        }
+    }
+    
+    /**
+     * Get array of active source Components
+     * 
+     * @public
+     * @instance
+     * @method getActiveSources
+     * @returns {Array}
+     */
+    function getActiveSources(){
+        let actSources = [];
+        for(let component of components.values()){
+            if(component.type === ComponentType.Source &amp;&amp; component.active){
+                actSources.push(component);
+            }
+        }
+        return actSources;
+    }
+    
+    /**
+     * Returns true if any true node has any untraveled components
+     * 
+     * @public
+     * @instance
+     * @method hasUnfinishedNode
+     * @returns {Boolean}
+     */
+    function hasUnfinishedNode(){
+        let hasUnfinished = false;
+        for(let slot of occupiedSlots.values()){
+            if(slot.isTrueNode &amp;&amp; !slot.hasAllTraveled){
+                hasUnfinished = true;
+                break;
+            }
+        }
+        return hasUnfinished;
+    }
+    
+    /**
+     * Returns true if Component Type is found on the Board
+     * 
+     * @public
+     * @instance
+     * @method hasType
+     * @param {ComponentType} type
+     * @returns {Boolean}
+     */
+    function hasType(type){
+        let found = false;
+        for(let component of components.values()){
+            if(component.type === type){
+                found = true;
+                break;
+            }
+        }
+        return found;
+    }
+    
+    return {
+        board: board,
+        getSlot: getSlot,
+        closed: closed,
+        occupiedSlots: occupiedSlots,
+        components: components,
+        place: place,
+        remove: remove,
+        get activeSources() { return getActiveSources(); },
+        get hasUnfinishedNode() { return hasUnfinishedNode(); },
+        hasType: hasType
+    };
+};
+
+/*
+  Testing
+*/
+/* (function init(global){
+    global.board = Board(15, 15);
+})(window || global); */
+
+/*
+0,0 
+    ---batt---
+    |        |
+w1  |        | w2
+    |        |
+    ---ress---  10,10
+*/
+/* 
+let batt = new Component({ label: 'batt' });
+batt.place([0,0],[10,0]);
+
+let wire1 = new Component({ label: 'wire 1' });
+wire1.place([0,0], [0,10]);
+
+let wire2 = new Component({ label: 'wire 2' });
+wire2.place([10,0], [10,10]);
+
+let resistor = new Component({ label: 'resistor' });
+resistor.place([0,10], [10,10]);
+ */</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Mon Jul 04 2016 20:39:00 GMT+0100 (GMT Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+</footer>
+
+<script>prettyPrint();</script>
+<script src="scripts/linenumber.js"></script>
+</body>
+</html>
