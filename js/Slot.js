@@ -1,3 +1,20 @@
+/** 
+ * Slot module
+ * @module Slot
+ * 
+ * @property {number}   x   Position x
+ * @property {number}   y   Position y
+ * @property {number}   V   Voltage through this slot
+ * 
+ * @property {number}       count                   Number of all connected Components
+ * @property {number}       activeCount             Number of all connected non-disabled/active Components
+ * @property {Map}          connections             Map of Connections in this Slot. Key is component_id and Value is { pin_index, component }
+ * @property {Map}          activeConnections       Same as connections property but only contains active ones
+ * @property {boolean}      isTrueNode              Indicates if this slot has >= 3 active connections or not
+ * @property {boolean}      hasAllTraveled          Indicates if all components has been traveled by Traverser or not
+ * @property {Connection[]} untraveledConnections   Array of all untraveled Connections
+ */
+
 'use strict';
 
 class Slot {
@@ -12,7 +29,7 @@ class Slot {
         }
         this.x = Math.floor(x);
         this.y = Math.floor(y);
-        this.V = 0; // voltage through this slot
+        this.V = 0;
         this.connected = new Map();
         /*  Connected Components Map Structure
             component_id : {
@@ -21,28 +38,23 @@ class Slot {
             }
         */
     }
-    
-    // Count all components
-	get count() {
-		return this.connected.size;
-	}
-    
-    // Count only non-disabled / active components
-	// This is used to determine true-nodes which has >= 3 active components
-    get activeCount() {
-        let count = 0;
-		this.connected.forEach((obj) => { 
-			if(obj.component.active) count++; 
-		});
-		return count;
+
+    get count() {
+        return this.connected.size;
     }
     
-    // Map that contains all connections
+    get activeCount() {
+        let count = 0;
+        this.connected.forEach((obj) => { 
+            if(obj.component.active) count++; 
+        });
+        return count;
+    }
+    
     get connections() {
         return this.connected;
     }
     
-    // Map that contains all active connections
     get activeConnections() {
         let accMap = new Map();
         for(let conn of this.connected.entries()){
@@ -53,12 +65,10 @@ class Slot {
         return accMap;
     }
     
-    // Check if True node - more than 3 non-disabled components connected
-	get isTrueNode() {
-		return this.activeCount >= 3;
-	}
+    get isTrueNode() {
+        return this.activeCount >= 3;
+    }
     
-    // Check if all connected components have been traveled
     get hasAllTraveled() {
         let allTraveled = true;
         for(let connection of this.connected.values()){
@@ -70,7 +80,6 @@ class Slot {
         return allTraveled;
     }
     
-    // Returns an array with untraveled connections { pin, component }
     get untraveledConnections() {
         let untraveled = [];
         for(let connection of this.connected.values()){
@@ -81,19 +90,36 @@ class Slot {
         return untraveled;
     }
     
-    // Add component
+    /**
+     * Add component to this Slot
+     * 
+     * @protected
+     * @instance
+     * @method add
+     * @param {Component} component
+     * @param {number} pin_index
+     * @see Use [Component#place]{@link module:Component#place} method instead
+     */
     add(component, pin_index) {
-		this.connected.set(
-			component.id, 
-			{ 
-				pin: pin_index, 
-				component: component 
-			}
-		);
-	}
+        this.connected.set(
+            component.id, 
+            { 
+                pin: pin_index, 
+                component: component 
+            }
+        );
+    }
     
-    // Remove component
-	remove(component) {
-		this.connected.delete(component.id);
-	}
+    /**
+     * Remove component from this Slot
+     * 
+     * @protected
+     * @instance
+     * @method remove
+     * @param {Component} component
+     * @see Use [Component#remove]{@link module:Component#remove} method instead
+     */
+    remove(component) {
+        this.connected.delete(component.id);
+    }
 }

@@ -1,45 +1,49 @@
 /**
  * Board module
  * @module Board
+ * @property {Map}      occupiedSlots   List of occupied slots on the board
+ * @property {Map}      components      List of components on the board
+ * @property {boolean}  closed          Indicates whether the circuit on the board is closed or not
  */
 
 'use strict';
 
 /*
-	pin index 0 - positive
-	pin index 1 - negative
-    
-    Probably need to redo the argument passing of positions to use
-    arrays e.g., [[0,0],[4,1]]
+    pin index 0 - positive
+    pin index 1 - negative
 */
 
 
 /**
  * Board
  * 
+ * @instance
  * @param {number} [width=10] Width of the board - 0 indexed
  * @param {number} [height=10] Height of the board - 0 indexed
  * @returns {Board}
- * @instance
+ * 
+ * @example
+ * let board = Board(100, 100);
  */
 let Board = function Board(width = 10, height = 10) {	
-	// Initialise empty board
-	let	board = Array.apply(null, { length: width });
-	board = board.map(() => {
+    // Initialise empty board
+    let	board = Array.apply(null, { length: width });
+    board = board.map(() => {
         return Array.apply(null, { length: height });
     });
     
     let occupiedSlots = new Map(),
         components = new Map();
     
-    // Closed Circuit flag
+    
     let closed = false;
     
     /**
      * Initialise a Slot if it hasn't already been done.
      * 
-     * @param {Array} pos e.g. [1,1]
      * @private
+     * @method initSlot
+     * @param {Array} pos e.g. [1,1]
      */
     function initSlot(pos){
         let [x,y] = pos;
@@ -51,63 +55,72 @@ let Board = function Board(width = 10, height = 10) {
     /**
      * Return the slot specified by the position given
      * 
+     * @private
+     * @method getSlot
      * @param {Array} pos
      * @returns {Slot}
-     * @private
      */
     function getSlot(pos){
         return board[pos[0]][pos[1]];
     }
-	
-	/**
-	 * Place Component pins into respective Slots
-	 * 
-	 * @param {Component} component
-	 * @param {Array} positions
-     * @see Use [Component's place]{@link Component#place} method
-	 */
-	function place(component, positions) {
+    
+    /**
+     * Place Component pins into respective Slots <br>
+     * Uses [Slot#add]{@link module:Slot#add}
+     * 
+     * @protected
+     * @instance
+     * @method place
+     * @param {Component} component
+     * @param {Array} positions
+     * @see Use [Component#place]{@link module:Component#place} method instead
+     */
+    function place(component, positions) {
         
-		positions.forEach((position, index) => {			
-			// Initialise to be a Slot if it is not one yet
-			initSlot(position);
-			
-			// Add the component to this Slot
-			getSlot(position).add(component, index);
+        positions.forEach((position, index) => {			
+            // Initialise to be a Slot if it is not one yet
+            initSlot(position);
+            
+            // Add the component to this Slot
+            getSlot(position).add(component, index);
             
             // Add to occupiedSlots
             addOccupiedSlot(position);
-		});
+        });
         
         addComponent(component);
-	}
-	
-	/**
-	 * Remove Component from its Slots
-	 * 
-	 * @param {Component} component
-     * @see Use [Component's remove]{@link Component#remove} method
-	 */
-	function remove(component){
-		component.pins.forEach((position) => {
-			let x = position[0],
-				y = position[1];
-			
-			board[x][y].remove(component);
+    }
+    
+    /**
+     * Remove Component from its Slots <br>
+     * Uses [Slot#remove]{@link module:Slot#remove}
+     * 
+     * @protected
+     * @instance
+     * @method remove
+     * @param {Component} component
+     * @see Use [Component#remove]{@link module:Component#remove} method
+     */
+    function remove(component){
+        component.pins.forEach((position) => {
             
-            if(board[x][y].count === 0){
+            let slot = getSlot(position);
+            slot.remove(component);
+            
+            if(slot.count === 0){
                 removeOccupiedSlot(position);
             }
-		});
+        });
         
         removeComponent(component);
-	}
+    }
     
     /**
      * Adds a position to a list of occupied Slots
      * 
-     * @param {Array} pos
      * @private
+     * @method addOccupiedSlot
+     * @param {Array} pos
      */
     function addOccupiedSlot(pos){
         if(!occupiedSlots.has(pos.toString())){
@@ -118,20 +131,22 @@ let Board = function Board(width = 10, height = 10) {
     /**
      * Remove position from the list of occupied Slots
      * 
-     * @param {Array} pos
      * @private
+     * @method removeOccupiedSlot
+     * @param {Array} pos
      */
     function removeOccupiedSlot(pos){
         if(occupiedSlots.has(pos.toString())){
             occupiedSlots.delete(pos.toString());
         }
     }
-	
+    
     /**
      * Add Component to list of components on the Board
      * 
-     * @param {Component} component
      * @private
+     * @method addComponent
+     * @param {Component} component
      */
     function addComponent(component){
         if(!components.has(component.id)){
@@ -142,8 +157,9 @@ let Board = function Board(width = 10, height = 10) {
     /**
      * Remove Component from list of components on the Board
      * 
-     * @param {Component} component
      * @private
+     * @method removeComponent
+     * @param {Component} component
      */
     function removeComponent(component){
         if(components.has(component.id)){
@@ -154,6 +170,9 @@ let Board = function Board(width = 10, height = 10) {
     /**
      * Get array of active source Components
      * 
+     * @public
+     * @instance
+     * @method getActiveSources
      * @returns {Array}
      */
     function getActiveSources(){
@@ -169,6 +188,9 @@ let Board = function Board(width = 10, height = 10) {
     /**
      * Returns true if any true node has any untraveled components
      * 
+     * @public
+     * @instance
+     * @method hasUnfinishedNode
      * @returns {Boolean}
      */
     function hasUnfinishedNode(){
@@ -185,6 +207,9 @@ let Board = function Board(width = 10, height = 10) {
     /**
      * Returns true if Component Type is found on the Board
      * 
+     * @public
+     * @instance
+     * @method hasType
      * @param {ComponentType} type
      * @returns {Boolean}
      */
@@ -199,25 +224,25 @@ let Board = function Board(width = 10, height = 10) {
         return found;
     }
     
-	return {
-		board: board,
+    return {
+        board: board,
         getSlot: getSlot,
         closed: closed,
         occupiedSlots: occupiedSlots,
         components: components,
-		place: place,
-		remove: remove,
+        place: place,
+        remove: remove,
         get activeSources() { return getActiveSources(); },
         get hasUnfinishedNode() { return hasUnfinishedNode(); },
         hasType: hasType
-	};
+    };
 };
 
 /*
   Testing
 */
 /* (function init(global){
-	global.board = Board(15, 15);
+    global.board = Board(15, 15);
 })(window || global); */
 
 /*
