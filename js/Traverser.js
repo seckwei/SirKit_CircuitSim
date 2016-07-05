@@ -1,6 +1,6 @@
 /**
  * Traverser module <br>
- * Currently only check if the circuit on the board is closed or not.
+ * Currently only check if the circuit on the board is closed or not. <br>
  * NOTE: This currently assumes that there is only one circuit on the board.
  * @module Traverser
  */
@@ -13,6 +13,9 @@
  * 
  * @instance
  * @returns {Traverser}
+ * 
+ * @example
+ * let traverser = Traverser();
  */
 let Traverser = function Traverser() {
 
@@ -275,7 +278,14 @@ let Traverser = function Traverser() {
     /**
      * Start the traversal
      * 
+     * @public
+     * @instance
+     * @method start
      * @param {Board} board
+     * 
+     * @example
+     * let traverser = Traverser();
+     * traverser.start(board);
      */
     function start(board) {
         checkClosedCircuit(board);
