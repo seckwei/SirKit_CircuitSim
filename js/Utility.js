@@ -1,12 +1,13 @@
 
 /**
- * Collection of utility functions
- * @namespace Utility
+ * Utility module
+ * @module Utility
  */
 
 /**
  * Returns true if argument is a number
  * 
+ * @static
  * @param {any} input
  * @returns {boolean}
  */
@@ -15,10 +16,13 @@ function isNumber(input) {
 }
 
 /**
- * Todo: Logs an error message along with its severity
+ * Logs an error message along with its severity
  * 
+ * @static
  * @param {string} message
  * @param {number} severity
+ * 
+ * @todo Do something with severity
  */
 function logger(message, severity){
 	// To do: do something with severity
@@ -29,7 +33,8 @@ function logger(message, severity){
 /**
  * Return true if duplicate pins are found
  * 
- * @param {Array} pins e.g. [[1,1], [2,2], [4,4]]
+ * @static
+ * @param {Array[]} pins Array of pins e.g. [[1,1], [2,2], [4,4]]
  * @returns {boolean}
  */
 function hasDuplicatePositions(pins) {

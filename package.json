@@ -1,0 +1,34 @@
+{
+  "name": "sirkit",
+  "version": "1.0.0",
+  "description": "Web Circuit Simulator",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate-docs" : "node_modules/.bin/jsdoc js -d doc -R README.md -t node_modules/docdash"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seckwei/SirKit_CircuitSim.git"
+  },
+  "keywords": [
+    "sirkit",
+    "circuitsim",
+    "circuit",
+    "simulation",
+    "simulator"
+  ],
+  "author": "Seck Wei Lim",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/seckwei/SirKit_CircuitSim/issues"
+  },
+  "homepage": "https://seckwei.github.io/SirKit_CircuitSim/index.html",
+  "devDependencies": {
+    "docdash": "^0.4.0",
+    "jsdoc": "^3.4.0"
+  }
+}
