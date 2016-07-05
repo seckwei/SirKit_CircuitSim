@@ -1,15 +1,42 @@
+/**
+ * Traverser module <br>
+ * Currently only check if the circuit on the board is closed or not.
+ * NOTE: This currently assumes that there is only one circuit on the board.
+ * @module Traverser
+ */
+
 'use strict';
 
+
+/**
+ * Traverser
+ * 
+ * @instance
+ * @returns {Traverser}
+ */
 let Traverser = function Traverser() {
 
-    // Private - To deactivate all open-ended branches
+    /**
+     * Deactivates all open-ended branches
+     * 
+     * @private
+     * @method deactivateOpenBranches
+     * @param {Board} board
+     */
     function deactivateOpenBranches(board) {
         board.occupiedSlots.forEach((slot) => {
             deactivateOpenEnds(board, slot);
         });
     }
 
-    // Private - Given a slot, we see if the component connected to it needs deactivating or not
+    /**
+     * Given a slot, we recursively see if the components connected to it needs deactivating or not.
+     * 
+     * @private
+     * @method deactivateOpenEnds
+     * @param {Board} board
+     * @param {Slot} slot
+     */
     function deactivateOpenEnds(board, slot) {
         if (slot.activeCount === 1) {
             let pinAndComponent = slot.activeConnections.values()    // returns @@iterator that contains values
@@ -32,21 +59,39 @@ let Traverser = function Traverser() {
         }
     }
 
-    // Private - Error if no source component found
+    /**
+     * Errors if no source component found
+     * 
+     * @private
+     * @method checkSourceExists
+     * @param {Board} board
+     */
     function checkSourceExists(board) {
         if(!board.hasType(ComponentType.Source)){
-            throw new Error('No source component found!');
+            logger('No source component found!');
         }
     }
 
-    // Private - Error if no ground component found
+    /**
+     * Errors if no ground component found
+     * 
+     * @private
+     * @method checkGroundExists
+     * @param {Board} board
+     */
     function checkGroundExists(board) {
         if(!board.hasType(ComponentType.Ground)){
-            throw new Error('No ground component found!');
+            logger('No ground component found!');
         }
     }
 
-    // Private - Report if circuit is not closed
+    /**
+     * Traverses through each active source component to check if the circuit is closed or not
+     * 
+     * @private
+     * @method checkClosedCircuit
+     * @param {Board} board
+     */
     function checkClosedCircuit(board) {
         checkSourceExists(board);
         //checkGroundExists(board);
@@ -58,7 +103,7 @@ let Traverser = function Traverser() {
         // The source component(s) might be deactivated due to being on an open branch
         // so that counts as an open circuit too
         if(activeSources.length === 0){
-            throw new Error('Closed circuit not found');
+            logger('No closed circuit found');
         }
 
         // Start traversal from each source components
@@ -67,6 +112,16 @@ let Traverser = function Traverser() {
         });
     }
 
+
+    /**
+     * Traverse through the circuit starting from the source component. <br>
+     * Sets the Board.closed field to 'true' if circuit is closed. <br>
+     * 
+     * @private
+     * @method traverseSource
+     * @param {Board} board
+     * @param {Source} source
+     */
     function traverseSource(board, source) {
         // Note: This is code is assuming that the source has two pins
 
@@ -88,7 +143,14 @@ let Traverser = function Traverser() {
         // Start traversing from the source
         checkBackAtSource(currentPos);
 
-        // Check to see if we're back at the source component
+        /**
+         * Check to see if we're back at the source component
+         * 
+         * @private
+         * @memberOf traverseSource
+         * @method checkBackAtSource
+         * @param {Position} pos
+         */
         function checkBackAtSource(pos) {
             if(pos.toString() === negativePinPos.toString()){
                 board.closed = true;
@@ -99,7 +161,15 @@ let Traverser = function Traverser() {
             }
         };
 
-        // Find node(s) that has untraveled connection(s)
+        /**
+         * Find node(s) that has untraveled connection(s). <br>
+         * Returns true if the traversal is done.
+         * 
+         * @private
+         * @memberOf traverseSource
+         * @method  findUnfinishedNode
+         * @returns {boolean}
+         */
         function findUnfinishedNode() {
             if(board.hasUnfinishedNode){
                 backToLastNode();
@@ -110,13 +180,26 @@ let Traverser = function Traverser() {
             }
         }
 
-        // Jump back to the most recent traveled node
+        /**
+         * Jump back to the most recent traveled node and start traversing from there again
+         * 
+         * @private
+         * @memberOf traverseSource
+         * @method backToLastNode
+         */
         function backToLastNode() {
             let lastNodePos = nodeTrace[nodeTrace.length-1];
             findUntraveledConnections(lastNodePos);
         }
 
-        // Find the untraveled connection(s) in a position/node
+        /**
+         * Find untraveled Connection(s) in a position/node
+         * 
+         * @private
+         * @memberOf traverseSource
+         * @method findUntraveledConnections
+         * @param {Position} pos
+         */
         function findUntraveledConnections(pos) {
             let connection = board.getSlot(pos).untraveledConnections[0];
 
@@ -131,7 +214,14 @@ let Traverser = function Traverser() {
             }
         }
 
-        // Check if this position is a true node or not
+        /**
+         * Check if this position is a true node or not
+         * 
+         * @private
+         * @memberOf traverseSource
+         * @method checkTrueNode
+         * @param {Position} pos
+         */
         function checkTrueNode(pos) {
             if(board.getSlot(pos).isTrueNode){
                 existsInTrace(pos);
@@ -145,7 +235,14 @@ let Traverser = function Traverser() {
             }
         }
 
-        // Check if this position/node exists in the trace already or not
+        /**
+         * Check if this position/node exists in the trace already or not
+         * 
+         * @private
+         * @memberOf traverseSource
+         * @method existsInTrace
+         * @param {Position} pos
+         */
         function existsInTrace(pos) {
             if(nodeTrace.find((node) => node.toString() === pos.toString())){
                 backToLastNode();
@@ -162,16 +259,26 @@ let Traverser = function Traverser() {
             }
         }
 
-        // Move onto the next position
+        /**
+         * Move onto the next position for traversal
+         * 
+         * @private
+         * @memberOf traverseSource
+         * @method goNextSlot
+         * @param {Position} nextPos
+         */
         function goNextSlot(nextPos) {
             checkBackAtSource(nextPos);
         }
     }
 
-    // Public
+    /**
+     * Start the traversal
+     * 
+     * @param {Board} board
+     */
     function start(board) {
-        checkSourceExists(board);
-        deactivateOpenBranches(board);
+        checkClosedCircuit(board);
     }
 
     return {
