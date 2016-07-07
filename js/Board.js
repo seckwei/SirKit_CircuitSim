@@ -13,7 +13,6 @@
     pin index 1 - negative
 */
 
-
 /**
  * Board
  * 
@@ -26,6 +25,7 @@
  * let board = Board(100, 100);
  */
 let Board = function Board(width = 10, height = 10) {	
+
     // Initialise empty board
     let	board = Array.apply(null, { length: width });
     board = board.map(() => {
@@ -238,31 +238,4 @@ let Board = function Board(width = 10, height = 10) {
     };
 };
 
-/*
-  Testing
-*/
-/* (function init(global){
-    global.board = Board(15, 15);
-})(window || global); */
-
-/*
-0,0 
-    ---batt---
-    |        |
-w1  |        | w2
-    |        |
-    ---ress---  10,10
-*/
-/* 
-let batt = new Component({ label: 'batt' });
-batt.place([0,0],[10,0]);
-
-let wire1 = new Component({ label: 'wire 1' });
-wire1.place([0,0], [0,10]);
-
-let wire2 = new Component({ label: 'wire 2' });
-wire2.place([10,0], [10,10]);
-
-let resistor = new Component({ label: 'resistor' });
-resistor.place([0,10], [10,10]);
- */
+module.exports = Board;
