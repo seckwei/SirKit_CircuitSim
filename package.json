@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "generate-docs" : "node_modules/.bin/jsdoc js -c JSDocConf.json"
+    "generate-docs": "node_modules/.bin/jsdoc js -c JSDocConf.json"
   },
   "repository": {
     "type": "git",
@@ -29,6 +29,10 @@
   "homepage": "https://seckwei.github.io/SirKit_CircuitSim/index.html",
   "devDependencies": {
     "docdash": "^0.4.0",
-    "jsdoc": "^3.4.0"
+    "jsdoc": "^3.4.0",
+    "karma": "^1.1.0",
+    "karma-jasmine": "^1.0.2",
+    "script-loader": "^0.7.0",
+    "webpack": "^1.13.1"
   }
 }

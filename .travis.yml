@@ -1,0 +1,11 @@
+language: node_js
+node_js:
+    - "6"
+script: node_modules/karma/bin/karma start karma.config.js --single-run
+before_script:
+    - npm install
+    - webpack
+#safelist
+branches:
+    only:
+        - develop

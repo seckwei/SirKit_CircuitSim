@@ -7,7 +7,6 @@
 
 'use strict';
 
-
 /**
  * Traverser
  * 
@@ -71,7 +70,7 @@ let Traverser = function Traverser() {
      */
     function checkSourceExists(board) {
         if(!board.hasType(ComponentType.Source)){
-            logger('No source component found!');
+            Utility.logger('No source component found!');
         }
     }
 
@@ -84,7 +83,7 @@ let Traverser = function Traverser() {
      */
     function checkGroundExists(board) {
         if(!board.hasType(ComponentType.Ground)){
-            logger('No ground component found!');
+            Utility.logger('No ground component found!');
         }
     }
 
@@ -106,7 +105,7 @@ let Traverser = function Traverser() {
         // The source component(s) might be deactivated due to being on an open branch
         // so that counts as an open circuit too
         if(activeSources.length === 0){
-            logger('No closed circuit found');
+            Utility.logger('No closed circuit found');
         }
 
         // Start traversal from each source components
@@ -299,3 +298,5 @@ let Traverser = function Traverser() {
         _checkClosedCircuit: checkClosedCircuit
     };
 }
+
+module.exports = Traverser;

@@ -61,13 +61,13 @@ class Component {
      * component.place([[0,0],[0,5]]);
      */
     place(...positions) {
-        if(hasDuplicatePositions(positions))
-            logger('Pins of the same component cannot share the same slot.');
+        if(Utility.hasDuplicatePositions(positions))
+            Utility.logger('Pins of the same component cannot share the same slot.');
         
         this.pins = positions;
         
         if(!window.board)
-            logger('Board not found!');
+            Utility.logger('Board not found!');
         window.board.place(this, positions);
     }
     
@@ -86,7 +86,7 @@ class Component {
      */
     remove() {
         if(!window.board)
-            logger('Board not found!');
+            Utility.logger('Board not found!');
         window.board.remove(this);
     }   
     
@@ -106,3 +106,5 @@ class Component {
         });
     }
 }
+
+module.exports = Component;

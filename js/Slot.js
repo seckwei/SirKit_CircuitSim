@@ -24,8 +24,8 @@ class Slot {
         }
         
         let [x,y] = pos;
-        if(!isNumber(x) || !isNumber(y) || x < 0 || y < 0){
-            logger('x and y has to be positive numbers');
+        if(!Utility.isNumber(x) || !Utility.isNumber(y) || x < 0 || y < 0){
+            Utility.logger('x and y has to be positive numbers');
         }
         this.x = Math.floor(x);
         this.y = Math.floor(y);
@@ -123,3 +123,5 @@ class Slot {
         this.connected.delete(component.id);
     }
 }
+
+module.exports = Slot;
