@@ -1,4 +1,6 @@
-# SirKit
+# SirKit 
+
+[![Build Status](https://travis-ci.org/seckwei/SirKit_CircuitSim.svg?branch=develop)](https://travis-ci.org/seckwei/SirKit_CircuitSim)
 
 SirKit (read as 'circuit'),  is my attempt to construct a JS circuit simulator that has HTML5 animations to illustrate various data and information of the circuit. This idea surfaced when I was shown [this video](https://www.youtube.com/watch?v=LKSgGamugTI), which ultimately led me to the [Paul Falstad's page](http://www.falstad.com/circuit/) that produced that animation. Soon after that, I found [EveryCircuit](http://everycircuit.com/)... and [DCAC Lab](http://dcaclab.com/)... and other online circuit sims.
 <br>

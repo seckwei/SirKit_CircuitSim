@@ -34,26 +34,26 @@ describe('Sirkit', function() {
         describe('isNumber()', function() {
 
             it('should return false for empty and non-empty string', function() {
-                expect(isNumber('')).toBe(false);
-                expect(isNumber(new String())).toBe(false);
-                expect(isNumber('string')).toBe(false);
+                expect(Utility.isNumber('')).toBe(false);
+                expect(Utility.isNumber(new String())).toBe(false);
+                expect(Utility.isNumber('string')).toBe(false);
             });
 
             it('should return false for NaN, null and undefined', function() {
-                expect(isNumber(NaN)).toBe(false);
-                expect(isNumber(null)).toBe(false);
-                expect(isNumber(undefined)).toBe(false);
+                expect(Utility.isNumber(NaN)).toBe(false);
+                expect(Utility.isNumber(null)).toBe(false);
+                expect(Utility.isNumber(undefined)).toBe(false);
             });
 
             it('should return false for object', function() {
-                expect(isNumber({})).toBe(false);
-                expect(isNumber(new Object())).toBe(false);
+                expect(Utility.isNumber({})).toBe(false);
+                expect(Utility.isNumber(new Object())).toBe(false);
             });
 
             it('should return true for integer, float, and Number object', function() {
-                expect(isNumber(3)).toBe(true);
-                expect(isNumber(0.333)).toBe(true);
-                expect(isNumber(new Number())).toBe(true);
+                expect(Utility.isNumber(3)).toBe(true);
+                expect(Utility.isNumber(0.333)).toBe(true);
+                expect(Utility.isNumber(new Number())).toBe(true);
             });
 
         });
@@ -61,11 +61,11 @@ describe('Sirkit', function() {
         describe('logger()', function() {
 
             it('should throw an Error', function() {
-                expect(logger).toThrowError();
+                expect(Utility.logger).toThrowError();
             });
 
             it('should throw an Error with supplied message', function() {
-                expect(logger.bind(null, 'custom message')).toThrowError('custom message');
+                expect(Utility.logger.bind(null, 'custom message')).toThrowError('custom message');
             });
 
         });
@@ -79,7 +79,7 @@ describe('Sirkit', function() {
                     [0, 0],
                     [3, 3]
                 ];
-                expect(hasDuplicatePositions(positions)).toBe(true);
+                expect(Utility.hasDuplicatePositions(positions)).toBe(true);
             });
 
             it('should return false if duplicate positions are absent', function() {
@@ -89,7 +89,7 @@ describe('Sirkit', function() {
                     [0, 0],
                     [3, 3]
                 ];
-                expect(hasDuplicatePositions(positions)).toBe(false);
+                expect(Utility.hasDuplicatePositions(positions)).toBe(false);
             });
 
         });
@@ -489,7 +489,7 @@ describe('Sirkit', function() {
                 wire3.place([2, 0], [2, 1]);
                 ground1.place([2, 1], [2, 5]);
 
-                expect(traverser._checkClosedCircuit.bind(null, board)).toThrowError('Closed circuit not found');
+                expect(traverser._checkClosedCircuit.bind(null, board)).toThrowError('No closed circuit found');
                 expect(board.closed).toBe(false);
             });
 
