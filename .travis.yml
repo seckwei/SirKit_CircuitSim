@@ -9,4 +9,5 @@ before_script:
 #safelist
 branches:
     only:
+        - master
         - develop
