@@ -3,6 +3,7 @@ let jsPath = './js/';
 module.exports = {
     entry: {
         app: [
+            'babel-polyfill',
             jsPath+'app.js', 
             jsPath+'Utility.js',
             jsPath+'Board.js',
@@ -22,8 +23,8 @@ module.exports = {
     module: {
         loaders : [
             {
-                test: /js\\.+\.js$/,
-                exclude: /(node_modules)/,
+                test: /(js|spec)\\.+\.js$/,
+                exclude: /(node_modules|babel-polyfill)/,
                 loader: 'babel',
                 query: {
                     presets: ['es2015']
