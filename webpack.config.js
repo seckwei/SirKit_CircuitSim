@@ -13,5 +13,17 @@ module.exports = {
 	output: {
 	    path: './dist',
 	    filename: 'app.bundle.js'
-	}
+	},
+    module: {
+        loaders : [
+            {
+                test: /js\\.+\.js$/,
+                exclude: /(node_modules)/,
+                loader: 'babel',
+                query: {
+                    presets: ['es2015']
+                }
+            }
+        ]
+    }
 };
