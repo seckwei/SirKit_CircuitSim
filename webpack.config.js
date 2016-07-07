@@ -1,18 +1,23 @@
 let jsPath = './js/';
 
 module.exports = {
-    entry: [
-        jsPath+'app.js', 
-        jsPath+'Utility.js',
-        jsPath+'Board.js',
-        jsPath+'Slot.js',
-        jsPath+'Component.js',
-        jsPath+'ComponentType.js',
-        jsPath+'Traverser.js'
-    ],
+    entry: {
+        app: [
+            jsPath+'app.js', 
+            jsPath+'Utility.js',
+            jsPath+'Board.js',
+            jsPath+'Slot.js',
+            jsPath+'Component.js',
+            jsPath+'ComponentType.js',
+            jsPath+'Traverser.js'
+        ],
+        spec: [
+            './spec/spec.js'
+        ]
+    },
 	output: {
 	    path: './dist',
-	    filename: 'app.bundle.js'
+	    filename: '[name].bundle.js'
 	},
     module: {
         loaders : [
