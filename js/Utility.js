@@ -10,7 +10,9 @@ let Utility = {
 	/**
 	 * Returns true if argument is a number
 	 * 
+	 * @public
 	 * @static
+	 * @method isNumber
 	 * @param {any} input
 	 * @returns {boolean}
 	 */
@@ -21,7 +23,9 @@ let Utility = {
 	/**
 	 * Logs an error message along with its severity
 	 * 
+	 * @public
 	 * @static
+	 * @method logger
 	 * @param {string} message
 	 * @param {number} severity
 	 * 
@@ -35,7 +39,9 @@ let Utility = {
 	/**
 	 * Return true if duplicate pins are found
 	 * 
+	 * @public
 	 * @static
+	 * @method hasDuplicatePositions
 	 * @param {Array[]} pins Array of pins e.g. [[1,1], [2,2], [4,4]]
 	 * @returns {boolean}
 	 */
