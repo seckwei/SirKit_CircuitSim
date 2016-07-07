@@ -23,7 +23,7 @@ module.exports = {
     module: {
         loaders : [
             {
-                test: /(js|spec)\\.+\.js$/,
+                test: /(js|spec)\/.+\.js$/,
                 exclude: /(node_modules|babel-polyfill)/,
                 loader: 'babel',
                 query: {
