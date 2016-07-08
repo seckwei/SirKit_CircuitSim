@@ -58,12 +58,20 @@ class Component {
      * @param {Array[]} positions
      * @example
      * let component = new Component();
-     * component.place([[0,0],[0,5]]);
+     * component.place([0,0],[0,5]);
      */
     place(...positions) {
+        if(!this.validatePositions(positions))
+            Utility.logger('Invalid positions provided - ' + positions.toString());
+
         if(Utility.hasDuplicatePositions(positions))
             Utility.logger('Pins of the same component cannot share the same slot.');
         
+        // If .place() is consecutively called without calling .remove()
+        // then we'll do it ourselves.
+        if(this.pins.length > 1)
+            this.remove();
+            
         this.pins = positions;
         
         if(!window.board)
@@ -81,13 +89,15 @@ class Component {
      * 
      * @example
      * let component = new Component();
-     * component.place([[0,0],[0,5]]);
+     * component.place([0,0],[0,5]);
      * component.remove();
      */
     remove() {
         if(!window.board)
             Utility.logger('Board not found!');
+
         window.board.remove(this);
+        this.pins = [];
     }   
     
     
@@ -104,6 +114,25 @@ class Component {
         return this.pins.filter((pinPos) => {
             return !(pinPos.toString() === pos.toString());
         });
+    }
+
+    /**
+     * Validate positions provided <br>
+     * Each position must be an Array that contains only two positive integers 
+     * 
+     * @private
+     * @method validatePositions
+     * @param {Array[]} positions
+     * @example
+     * [1,2], [2,3]     // the only valid format
+     * ['a',2], [2,3]   // invalid
+     * [], [1]          // invalid
+     */
+    validatePositions(positions){
+        return positions.length == 2 &&
+            !positions.some((position) => {
+                return !(position instanceof Array) || !(/^\d+\,\d+$/.test(position.toString()));
+            });
     }
 }
 

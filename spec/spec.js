@@ -348,10 +348,40 @@ describe('Sirkit', function() {
 
         describe('Component object', function() {
 
+            it('should have validation for coordinates of the pins', function(){
+                let Component_IIFE = (...params) => {
+                    return () => {
+                        wire1.place(...params);
+                    }
+                };
+
+                expect(Component_IIFE([1,2], [2,3])).not.toThrowError();
+
+                expect(Component_IIFE(['a','b'], [1,2])).toThrowError();   // non-integer
+                expect(Component_IIFE([1,2], [-1,-2])).toThrowError();     // negative
+                expect(Component_IIFE([1,2], [0.5,2])).toThrowError();     // float                
+                expect(Component_IIFE([1,2], [3,4,5])).toThrowError();     // more than 2 values
+                expect(Component_IIFE([1,2])).toThrowError();              // only half a pair
+                expect(Component_IIFE([1],[])).toThrowError();             // empty / insufficient values
+            });
+
             it('should be placed into the right slots after calling place()', function() {
                 wire1.place([0, 1], [1, 2]);
                 expect(JSON.stringify(board.board[0][1].connections.get(wire1.id).component)).toBe(JSON.stringify(wire1));
                 expect(JSON.stringify(board.board[1][2].connections.get(wire1.id).component)).toBe(JSON.stringify(wire1));
+            });
+
+            it('should be able to call .place multiple times to relocate', function(){
+                wire1.place([0, 1], [1, 2]);
+                wire1.place([2, 2], [3, 3]);
+
+                // No longer in previous slots
+                expect(board.board[0][1].connections.has(wire1.id)).toBe(false);
+                expect(board.board[1][2].connections.has(wire1.id)).toBe(false);
+
+                // Present in relocated slots
+                expect(board.board[2][2].connections.has(wire1.id)).toBe(true);
+                expect(board.board[3][3].connections.has(wire1.id)).toBe(true);
             });
 
             it('should be removed from the slots it was place into after calling remove()', function() {
