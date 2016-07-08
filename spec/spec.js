@@ -348,6 +348,23 @@ describe('Sirkit', function() {
 
         describe('Component object', function() {
 
+            it('should have validation for coordinates of the pins', function(){
+                let Component_IIFE = (...params) => {
+                    return () => {
+                        wire1.place(...params);
+                    }
+                };
+
+                expect(Component_IIFE([1,2], [2,3])).not.toThrowError();
+
+                expect(Component_IIFE(['a','b'], [1,2])).toThrowError();   // non-integer
+                expect(Component_IIFE([1,2], [-1,-2])).toThrowError();     // negative
+                expect(Component_IIFE([1,2], [0.5,2])).toThrowError();     // float                
+                expect(Component_IIFE([1,2], [3,4,5])).toThrowError();     // more than 2 values
+                expect(Component_IIFE([1,2])).toThrowError();              // only half a pair
+                expect(Component_IIFE([1],[])).toThrowError();             // empty / insufficient values
+            });
+
             it('should be placed into the right slots after calling place()', function() {
                 wire1.place([0, 1], [1, 2]);
                 expect(JSON.stringify(board.board[0][1].connections.get(wire1.id).component)).toBe(JSON.stringify(wire1));
