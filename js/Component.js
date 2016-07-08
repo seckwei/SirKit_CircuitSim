@@ -67,6 +67,11 @@ class Component {
         if(Utility.hasDuplicatePositions(positions))
             Utility.logger('Pins of the same component cannot share the same slot.');
         
+        // If .place() is consecutively called without calling .remove()
+        // then we'll do it ourselves.
+        if(this.pins.length > 1)
+            this.remove();
+            
         this.pins = positions;
         
         if(!window.board)
@@ -90,7 +95,9 @@ class Component {
     remove() {
         if(!window.board)
             Utility.logger('Board not found!');
+
         window.board.remove(this);
+        this.pins = [];
     }   
     
     

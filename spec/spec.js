@@ -371,6 +371,19 @@ describe('Sirkit', function() {
                 expect(JSON.stringify(board.board[1][2].connections.get(wire1.id).component)).toBe(JSON.stringify(wire1));
             });
 
+            it('should be able to call .place multiple times to relocate', function(){
+                wire1.place([0, 1], [1, 2]);
+                wire1.place([2, 2], [3, 3]);
+
+                // No longer in previous slots
+                expect(board.board[0][1].connections.has(wire1.id)).toBe(false);
+                expect(board.board[1][2].connections.has(wire1.id)).toBe(false);
+
+                // Present in relocated slots
+                expect(board.board[2][2].connections.has(wire1.id)).toBe(true);
+                expect(board.board[3][3].connections.has(wire1.id)).toBe(true);
+            });
+
             it('should be removed from the slots it was place into after calling remove()', function() {
                 wire1.place([0, 1], [1, 2]);
                 wire1.remove();
