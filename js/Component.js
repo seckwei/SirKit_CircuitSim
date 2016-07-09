@@ -64,7 +64,7 @@ class Component {
         if(!this.validatePositions(positions))
             Utility.logger('Invalid positions provided - ' + positions.toString());
 
-        if(Utility.hasDuplicatePositions(positions))
+        if(Component.hasDuplicatePositions(positions))
             Utility.logger('Pins of the same component cannot share the same slot.');
         
         // If .place() is consecutively called without calling .remove()
@@ -128,12 +128,27 @@ class Component {
      * ['a',2], [2,3]   // invalid
      * [], [1]          // invalid
      */
-    validatePositions(positions){
+    validatePositions(positions) {
         return positions.length == 2 &&
             !positions.some((position) => {
                 return !(position instanceof Array) || !(/^\d+\,\d+$/.test(position.toString()));
             });
     }
+
+    /**
+	 * Return true if duplicate pins are found
+	 * 
+	 * @public
+	 * @static
+	 * @method hasDuplicatePositions
+	 * @param {Array[]} pins Array of pins e.g. [[1,1], [2,2], [4,4]]
+	 * @returns {boolean}
+	 */
+	static hasDuplicatePositions(pins) {
+		return pins
+				.map(pin => pin.toString())
+				.some((pin, index, arr) => index !== arr.lastIndexOf(pin));
+	}
 }
 
 module.exports = Component;
