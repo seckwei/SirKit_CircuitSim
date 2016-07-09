@@ -69,30 +69,6 @@ describe('Sirkit', function() {
             });
 
         });
-
-        describe('hasDuplicatePositions()', function() {
-
-            it('should return true if duplicate positions are present', function() {
-                let positions = [
-                    [0, 0],
-                    [1, 1],
-                    [0, 0],
-                    [3, 3]
-                ];
-                expect(Utility.hasDuplicatePositions(positions)).toBe(true);
-            });
-
-            it('should return false if duplicate positions are absent', function() {
-                let positions = [
-                    [0, 1],
-                    [1, 1],
-                    [0, 0],
-                    [3, 3]
-                ];
-                expect(Utility.hasDuplicatePositions(positions)).toBe(false);
-            });
-
-        });
     });
 
     describe('Sirkit\'s Topological Prototype', function() {
@@ -396,6 +372,30 @@ describe('Sirkit', function() {
                 expect(wire1.getOtherPins([0, 0])).toEqual([
                     [1, 1]
                 ]);
+            });
+
+            describe('hasDuplicatePositions', function() {
+
+                it('should return true if duplicate positions are present', function() {
+                    let positions = [
+                        [0, 0],
+                        [1, 1],
+                        [0, 0],
+                        [3, 3]
+                    ];
+                    expect(Component.hasDuplicatePositions(positions)).toBe(true);
+                });
+
+                it('should return false if duplicate positions are absent', function() {
+                    let positions = [
+                        [0, 1],
+                        [1, 1],
+                        [0, 0],
+                        [3, 3]
+                    ];
+                    expect(Component.hasDuplicatePositions(positions)).toBe(false);
+                });
+
             });
         });
     });
