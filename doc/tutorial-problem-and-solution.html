@@ -40,9 +40,9 @@
 
 <article>
     <blockquote>
-<p>Note: This is <em>NOT</em> a tutorial. I am putting this document here because I want it to be together with the project's docs and because there's only one way to include my own docs in JSDoc, which is in the tutorial.</p>
+<p>Note: This is <strong><em>NOT</em></strong> a tutorial. I am putting this document here because I want it to be together with the project's docs and because there's only one way to include my own docs in JSDoc, which is in the tutorial.</p>
 </blockquote>
-<h2>Problem #1</h2><blockquote>
+<h2><a name="problem-1"></a>Problem #1</h2><blockquote>
 <p>If your finger touches your hand, does your hand feel your finger first, or the other way round?</p>
 </blockquote>
 <p>Assuming the following code:</p>
@@ -59,7 +59,7 @@ Now, the code would look something more like this (assuming there's a grid objec
 batt.P.to(1,1); // to(x,y) - coordinates of a grid or board
 wire.A.to(1,1);</code></pre><p>If you think about it now, the grid object can then store / manipulate the states for both the components to interact with!</p>
 <p><br></p>
-<h2>Problem #2</h2><p>Now that I know how components can 'connect', I still don't know how to put a lot of things together
+<h2><a name="problem-2"></a>Problem #2</h2><p>Now that I know how components can 'connect', I still don't know how to put a lot of things together
 i.e. how are we going to calculate the voltage, conductance, etc? The major obstacle I have for this project is my lack of (or almost negligible) experience
 and understanding in the field of electrical / electronic. The good thing is that there are tons of resources online such as the conceptual
 way of how circuit sims work (see Resources Section, too lazy to reference anything at this point).</p>
@@ -67,7 +67,7 @@ way of how circuit sims work (see Resources Section, too lazy to reference anyth
 One of the things for me to learn is <strong>Nodal Analysis</strong> + Gaussian Elimination (to solve the system of linear equations from it). However, Nodal Analysis
 will not be enough since it's just for DC Analysis only. Either way, this is still a good start for me to take on this project.</p>
 <p><br></p>
-<h2>Problem #3</h2><blockquote>
+<h2><a name="problem-3"></a>Problem #3</h2><blockquote>
 <p><em>&quot;Ground control to Major Tom...&quot;</em></p>
 </blockquote>
 <p>As I am trying to make Nodal Analysis the one method to rule them all (KCL &amp; KVL) for DC analysis, I have found myself to be in a pickle. One of the steps of Nodal Analysis is to choose a reference node and mark the node voltage to 0, and we can then calculate the other nodes' voltages with reference to it i.e., we have to 'make' a node the <em>ground</em> of the circuit. Which leads to the problem - how should I decide where the ground should be? If a different node is chosen as a ground, wouldn't that give a different result? What would be the criteria for a node to be best suited as the ground?</p>
@@ -77,14 +77,14 @@ will not be enough since it's just for DC Analysis only. Either way, this is sti
 </blockquote>
 <p>Main take away: Remind yourself of the reason for doing the project, and what it is for.</p>
 <p><br></p>
-<h2>Problem #4</h2><p>While I was practising Nodal Analysis with various simple circuits, I came across a challenge - how do I write the KCL equation for a node with a branch that only has a voltage source i.e. a V-branch? Since the branch does not have (significant) resistance, how am I going to calculate the current in that branch?</p>
+<h2><a name="problem-4"></a>Problem #4</h2><p>While I was practising Nodal Analysis with various simple circuits, I came across a challenge - how do I write the KCL equation for a node with a branch that only has a voltage source i.e. a V-branch? Since the branch does not have (significant) resistance, how am I going to calculate the current in that branch?</p>
 <center>
 <img src="../image/p4_vbranch.jpg" alt="P4 V-branch">
 <br>
 <em>Highlighted in red: V-Branch a.k.a. evil branch as said by L.R.Linares</em>
 </center>
 
-<p>The easiest way is to place the ground component at the negative end of the source, but remember, for the solution to Problem #3 we are giving the user the freedom to place the ground anywhere.</p>
+<p>The easiest way is to place the ground component at the negative end of the source, but remember, for the solution to <a href="#problem-3">Problem #3</a> we are giving the user the freedom to place the ground anywhere.</p>
 <p>Assuming the following circuit is what I am trying to solve:</p>
 <center>
 <img src="../image/p4_simple-circuit.jpg" alt="P4 Circuit">
@@ -123,14 +123,14 @@ Equation #2
 With that, we can continue solving for V<sub>1</sub> and the rest of the circuit. Big thanks to L.R.Linares' video on Modified Nodal Analysis that provided me with the V-branch equation, the key to solving this problem. </p>
 <p><br></p>
 <hr>
-<h2>Resources</h2><ol>
+<h2><a name="resources"></a>Resources</h2><ol>
 <li><a href="https://electronics.stackexchange.com/questions/91416/how-do-circuit-simulators-actually-work/91437#91437?newreg=6cdfc012e3d74ac08ddb38d4c5ca9844">How do Circuit Simulators actually work?</a></li>
 <li><a href="http://www.ecircuitcenter.com/SpiceTopics/Overview/Overview.htm">SPICE ALGORITHM OVERVIEW</a></li>
 <li><a href="http://mathonweb.com/help/backgd5.htm">Nodal Analysis</a></li>
 <li><a href="https://www.youtube.com/watch?v=MczLK6143kg">Youtube - Types of Branches by L.R.Linares</a></li>
 <li><a href="https://www.youtube.com/watch?v=UGwwX4joijY">Youtube - Modified Nodal Analysis by L.R.Linares</a></li>
 </ol>
-<h2>Other Circuit Sims (or the like)</h2><ol>
+<h2><a name="others"></a>Other Circuit Sims (or the like)</h2><ol>
 <li><a href="http://www.falstad.com/circuit">Falstad's</a></li>
 <li><a href="http://everycircuit.com/">EveryCircuit</a></li>
 <li><a href="http://dcaclab.com/en/home">DC/ACLab</a></li>
@@ -149,7 +149,7 @@ With that, we can continue solving for V<sub>1</sub> and the rest of the circuit
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Fri Jul 08 2016 20:12:17 GMT+0100 (GMT Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Sat Jul 09 2016 16:42:05 GMT+0100 (GMT Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

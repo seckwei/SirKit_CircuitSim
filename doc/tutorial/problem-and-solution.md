@@ -1,6 +1,6 @@
-> Note: This is _NOT_ a tutorial. I am putting this document here because I want it to be together with the project's docs and because there's only one way to include my own docs in JSDoc, which is in the tutorial.
+> Note: This is **_NOT_** a tutorial. I am putting this document here because I want it to be together with the project's docs and because there's only one way to include my own docs in JSDoc, which is in the tutorial.
 
-## Problem #1
+## <a name="problem-1"></a>Problem #1
 > If your finger touches your hand, does your hand feel your finger first, or the other way round?
 
 Assuming the following code:
@@ -26,7 +26,7 @@ wire.A.to(1,1);
 If you think about it now, the grid object can then store / manipulate the states for both the components to interact with!
 
 <br>
-## Problem #2
+## <a name="problem-2"></a>Problem #2
 Now that I know how components can 'connect', I still don't know how to put a lot of things together
 i.e. how are we going to calculate the voltage, conductance, etc? The major obstacle I have for this project is my lack of (or almost negligible) experience
 and understanding in the field of electrical / electronic. The good thing is that there are tons of resources online such as the conceptual
@@ -39,7 +39,7 @@ One of the things for me to learn is **Nodal Analysis** + Gaussian Elimination (
 will not be enough since it's just for DC Analysis only. Either way, this is still a good start for me to take on this project.
 
 <br>
-## Problem #3
+## <a name="problem-3"></a>Problem #3
 > _"Ground control to Major Tom..."_
 
 As I am trying to make Nodal Analysis the one method to rule them all (KCL & KVL) for DC analysis, I have found myself to be in a pickle. One of the steps of Nodal Analysis is to choose a reference node and mark the node voltage to 0, and we can then calculate the other nodes' voltages with reference to it i.e., we have to 'make' a node the _ground_ of the circuit. Which leads to the problem - how should I decide where the ground should be? If a different node is chosen as a ground, wouldn't that give a different result? What would be the criteria for a node to be best suited as the ground?
@@ -52,7 +52,7 @@ So how am I to decide what is the best / ideal place for a ground? Answer, I don
 Main take away: Remind yourself of the reason for doing the project, and what it is for.
 
 <br>
-## Problem #4
+## <a name="problem-4"></a>Problem #4
 While I was practising Nodal Analysis with various simple circuits, I came across a challenge - how do I write the KCL equation for a node with a branch that only has a voltage source i.e. a V-branch? Since the branch does not have (significant) resistance, how am I going to calculate the current in that branch?
 
 <center>
@@ -61,7 +61,7 @@ While I was practising Nodal Analysis with various simple circuits, I came acros
 _Highlighted in red: V-Branch a.k.a. evil branch as said by L.R.Linares_
 </center>
 
-The easiest way is to place the ground component at the negative end of the source, but remember, for the solution to Problem #3 we are giving the user the freedom to place the ground anywhere.
+The easiest way is to place the ground component at the negative end of the source, but remember, for the solution to [Problem #3](#problem-3) we are giving the user the freedom to place the ground anywhere.
 
 Assuming the following circuit is what I am trying to solve:
 <center>
@@ -108,7 +108,7 @@ With that, we can continue solving for V<sub>1</sub> and the rest of the circuit
 <br>
 ___
 
-## Resources
+## <a name="resources"></a>Resources
 
 1. [How do Circuit Simulators actually work?](https://electronics.stackexchange.com/questions/91416/how-do-circuit-simulators-actually-work/91437#91437?newreg=6cdfc012e3d74ac08ddb38d4c5ca9844)
 2. [SPICE ALGORITHM OVERVIEW](http://www.ecircuitcenter.com/SpiceTopics/Overview/Overview.htm)
@@ -116,7 +116,7 @@ ___
 4. [Youtube - Types of Branches by L.R.Linares](https://www.youtube.com/watch?v=MczLK6143kg)
 5. [Youtube - Modified Nodal Analysis by L.R.Linares](https://www.youtube.com/watch?v=UGwwX4joijY)
 
-## Other Circuit Sims (or the like)
+## <a name="others"></a>Other Circuit Sims (or the like)
 
 1. [Falstad's](http://www.falstad.com/circuit)
 2. [EveryCircuit](http://everycircuit.com/)
