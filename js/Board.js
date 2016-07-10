@@ -4,6 +4,7 @@
  * @property {Map}      occupiedSlots   List of occupied slots on the board
  * @property {Map}      components      List of components on the board
  * @property {boolean}  closed          Indicates whether the circuit on the board is closed or not
+ * @property {Array[]}  circuits        2D array - Each item in this array stores an array of a circuit's node positions. Example: [[[0,5],[0,6]], [[1,2]]]. Circuit 1's nodes are [0,5] and [0,6]; and Circuit 2's is [1,2].
  */
 
 'use strict';
@@ -35,15 +36,16 @@ let Board = function Board(width = 10, height = 10) {
     let occupiedSlots = new Map(),
         components = new Map();
     
-    
     let closed = false;
+
+    let circuits = [];
     
     /**
      * Initialise a Slot if it hasn't already been done.
      * 
      * @private
      * @method initSlot
-     * @param {Array} pos e.g. [1,1]
+     * @param {Position} pos e.g. [1,1]
      */
     function initSlot(pos){
         let [x,y] = pos;
@@ -57,7 +59,7 @@ let Board = function Board(width = 10, height = 10) {
      * 
      * @private
      * @method getSlot
-     * @param {Array} pos
+     * @param {Position} pos
      * @returns {Slot}
      */
     function getSlot(pos){
@@ -72,7 +74,7 @@ let Board = function Board(width = 10, height = 10) {
      * @instance
      * @method place
      * @param {Component} component
-     * @param {Array} positions
+     * @param {Positions[]} positions
      * @see Use [Component#place]{@link module:Component#place} method instead
      */
     function place(component, positions) {
@@ -120,7 +122,7 @@ let Board = function Board(width = 10, height = 10) {
      * 
      * @private
      * @method addOccupiedSlot
-     * @param {Array} pos
+     * @param {Position} pos
      */
     function addOccupiedSlot(pos){
         if(!occupiedSlots.has(pos.toString())){
@@ -133,7 +135,7 @@ let Board = function Board(width = 10, height = 10) {
      * 
      * @private
      * @method removeOccupiedSlot
-     * @param {Array} pos
+     * @param {Position} pos
      */
     function removeOccupiedSlot(pos){
         if(occupiedSlots.has(pos.toString())){
@@ -173,7 +175,7 @@ let Board = function Board(width = 10, height = 10) {
      * @public
      * @instance
      * @method getActiveSources
-     * @returns {Array}
+     * @returns {Components[]}
      */
     function getActiveSources(){
         let actSources = [];
@@ -223,18 +225,45 @@ let Board = function Board(width = 10, height = 10) {
         }
         return found;
     }
+
+    /**
+     * Creates a new array to store a new circuit's node positions
+     * 
+     * @public
+     * @instance
+     * @method createCircuit
+     */
+    function createCircuit(){
+        circuits.push([]);
+    }
+
+    /**
+     * Adds the position to the LATEST circuit's array of node positions
+     * 
+     * @public
+     * @instance
+     * @method addToCircuit
+     * @param {Position} pos
+     */
+    function addToCircuit(pos){
+        // Push to the latest array
+        circuits[circuits.length-1].push(pos);
+    }
     
     return {
         board: board,
-        getSlot: getSlot,
-        closed: closed,
         occupiedSlots: occupiedSlots,
         components: components,
+        closed: closed,
+        get circuits () { return circuits; },
+        getSlot: getSlot,
         place: place,
         remove: remove,
         get activeSources() { return getActiveSources(); },
         get hasUnfinishedNode() { return hasUnfinishedNode(); },
-        hasType: hasType
+        hasType: hasType,
+        createCircuit: createCircuit,
+        addToCircuit: addToCircuit
     };
 };
 
