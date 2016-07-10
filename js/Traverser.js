@@ -1,7 +1,6 @@
 /**
  * Traverser module <br>
- * Currently only check if the circuit on the board is closed or not. <br>
- * NOTE: This currently assumes that there is only one circuit on the board.
+ * Currently only check if any circuit on the board is closed or not.
  * @module Traverser
  */
 
@@ -96,7 +95,7 @@ let Traverser = function Traverser() {
      */
     function checkClosedCircuit(board) {
         checkSourceExists(board);
-        //checkGroundExists(board);
+        checkGroundExists(board);
         deactivateOpenBranches(board);
 
         // We have to find a list of active Sources, so we can start traversing!
@@ -203,12 +202,10 @@ let Traverser = function Traverser() {
          * @param {Position} pos
          */
         function findUntraveledConnections(pos) {
-            let connection = board.getSlot(pos).untraveledConnections[0];
+            let connections = board.getSlot(pos).untraveledConnections;
 
-            if(!!connection){ // Found
-                let nextPos = connection.component.pins[connection.pin];
-                connection.component.traveled = true;
-                goNextSlot(nextPos);
+            if(!!connections.length){ // Found
+                goNextSlot(pos);
             }
             else { // Not found
                 nodeTrace.pop();
@@ -229,11 +226,7 @@ let Traverser = function Traverser() {
                 existsInTrace(pos);
             }
             else {
-                let connection = board.getSlot(pos).untraveledConnections[0],
-                    nextPos = connection.component.getOtherPins(pos)[0];
-
-                connection.component.traveled = true;
-                goNextSlot(nextPos);
+                goNextSlot(pos);
             }
         }
 
@@ -251,26 +244,34 @@ let Traverser = function Traverser() {
             }
             else {
                 nodeTrace.push(pos);
-
-                let connection = board.getSlot(pos).untraveledConnections[0],
-                    component = connection.component,
-                    nextPos = component.getOtherPins(component.pins[connection.pin])[0];
-
-                component.traveled = true;
-                goNextSlot(nextPos);
+                goNextSlot(pos);
             }
         }
 
         /**
-         * Move onto the next position for traversal
+         * Picks the component's other pin and moves onto its position to continue traversal <br>
          * 
          * @private
          * @memberOf traverseSource
          * @method goNextSlot
-         * @param {Position} nextPos
+         * @param {Position} pos Current position
          */
-        function goNextSlot(nextPos) {
-            checkBackAtSource(nextPos);
+        function goNextSlot(pos) {
+            let connection = board.getSlot(pos).untraveledConnections[0],
+                component = connection.component,
+                nextPos = component.getOtherPins(pos)[0];
+
+            component.traveled = true;
+            
+            // We don't need to go to the next slot if the current
+            // component is a ground
+            if(component.type === ComponentType.Ground) {
+                checkBackAtSource(pos);
+            }
+            else {
+                checkBackAtSource(nextPos);
+            }
+
         }
     }
 

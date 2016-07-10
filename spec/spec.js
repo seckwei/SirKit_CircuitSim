@@ -556,11 +556,13 @@ describe('Sirkit', function() {
                 wire6.place([2,8], [6,8]);
                 ground1.place([6,8], [6,10]);
                 
-                /*  B+ ---wire1---+---wire2---+
+                /*              Node1
+                    B+ ---wire1---+---wire2---+
                     |             |           |
                     |batt1        |wire5      |wire6
                     |             |           |
                     B- ---wire3---+---wire4---+---GND
+                                Node2
                 */
                 
                 expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
@@ -586,11 +588,13 @@ describe('Sirkit', function() {
                 wire6.place([2,8], [6,8]);
                 ground1.place([6,8], [6,10]);
                 
-                /*  B+ ---wire1---+---wire2---+
+                /*              Node1
+                    B+ ---wire1---+---wire2---+
                     |             |           |
                     |batt1        |wire5      |wire6
                     |             |           |
                     B- ---wire3---+---wire4---+---GND
+                                Node2
                 */
                 
                 expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
@@ -613,11 +617,13 @@ describe('Sirkit', function() {
                 wire12.place([12,18], [16,18]);
                 ground2.place([16,18], [16,20]);
                 
-                /*  B+ ---wire6---+---wire8---+
+                /*              Node3
+                    B+ ---wire7---+---wire8---+
                     |             |           |
                     |batt2        |wire11     |wire12
                     |             |           |
                     B- ---wire9---+---wire10--+---GND
+                                Node4
                 */
                 expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
                 expect(batt2.traveled).toBe(true);
