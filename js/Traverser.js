@@ -131,7 +131,11 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
         if(source.traveled){
             return;
         }
+
         source.traveled = true;
+
+        // Set up new array to store this circuit's nodes
+        board.createCircuit();
 
         // Store the negative pin positions of the source so we can tell if we are back at source later
         let currentPos = source.pins[0],
@@ -158,7 +162,14 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
 
             if(pos.toString() === negativePinPos.toString()){
                 board.closed = true;
-                findUnfinishedNode();
+                
+                // This pos might be a true node, while being back at source component
+                if(board.getSlot(pos).isTrueNode){
+                    existsInTrace(pos);
+                }
+                else {
+                    findUnfinishedNode();
+                }
             }
             else {
                 checkTrueNode(pos);
@@ -181,7 +192,7 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
                 backToLastNode();
             }
             else {
-                trace('findUnfinishedNode', 'END OF TRAVERSAL', nodeTrace);
+                trace('findUnfinishedNode', 'END OF TRAVERSAL');
                 return true;
             }
         }
@@ -211,14 +222,12 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
         function findUntraveledConnections(pos) {
             trace('findUntraveledConnections', pos);
 
-            let connections = board.getSlot(pos).untraveledConnections;
-
-            if(!!connections.length){ // Found
-                goNextSlot(pos);
-            }
-            else { // Not found
+            if(board.getSlot(pos).hasAllTraveled){ // Not found
                 nodeTrace.pop();
                 findUnfinishedNode();
+            }
+            else { // Found
+                goNextSlot(pos);
             }
         }
 
@@ -256,6 +265,9 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
                 backToLastNode();
             }
             else {
+                // Add to this circuit's node array
+                board.addToCircuit(pos);
+
                 nodeTrace.push(pos);
                 goNextSlot(pos);
             }
@@ -306,6 +318,14 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
         checkClosedCircuit(board);
     }
 
+
+    /**
+     * Tracing the steps in the traversal
+     * 
+     * @private
+     * @method trace
+     * @param {any} params
+     */
     function trace(...params) {
         if(debug) {
             console.log(...params);
