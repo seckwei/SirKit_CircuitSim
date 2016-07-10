@@ -11,6 +11,7 @@
  * @property {boolean}          active      Component is active or not
  * @property {boolean}          traveled    Component has been traveled by Traverser or not
  * @property {Array[]}          pins        Component pins
+ * @property {Board}            board       STATIC property which references to the Board object
  */
 
 'use strict';
@@ -61,6 +62,9 @@ class Component {
      * component.place([0,0],[0,5]);
      */
     place(...positions) {
+        if(!Component.board)
+            Utility.logger('Component.board not set!');
+
         if(!this.validatePositions(positions))
             Utility.logger('Invalid positions provided - ' + positions.toString());
 
@@ -73,10 +77,7 @@ class Component {
             this.remove();
             
         this.pins = positions;
-        
-        if(!window.board)
-            Utility.logger('Board not found!');
-        window.board.place(this, positions);
+        Component.board.place(this, positions);
     }
     
     /**
@@ -93,10 +94,10 @@ class Component {
      * component.remove();
      */
     remove() {
-        if(!window.board)
-            Utility.logger('Board not found!');
+        if(!Component.board)
+            Utility.logger('Component.board not set!');
 
-        window.board.remove(this);
+        Component.board.remove(this);
         this.pins = [];
     }   
     
@@ -150,5 +151,14 @@ class Component {
 				.some((pin, index, arr) => index !== arr.lastIndexOf(pin));
 	}
 }
+
+/**
+ * Component's saved reference to the board
+ * 
+ * @public
+ * @static
+ * @name Component#board
+ */
+Component.board = undefined;
 
 module.exports = Component;

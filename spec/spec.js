@@ -9,6 +9,8 @@ describe('Sirkit', function() {
         window.board = Board(board_width, board_height);
         window.slot = new Slot([0,0]);
 
+        Component.board = window.board;
+
         let num_of_components = 50;
         while (num_of_components-- !== 1) {
             window['wire' + num_of_components] = new Component({
@@ -339,6 +341,15 @@ describe('Sirkit', function() {
                 expect(Component_IIFE([1,2], [3,4,5])).toThrowError();     // more than 2 values
                 expect(Component_IIFE([1,2])).toThrowError();              // only half a pair
                 expect(Component_IIFE([1],[])).toThrowError();             // empty / insufficient values
+            });
+
+            it('should throw an error if Component.board is not set', function(){
+                // The board field is set to 'window.board' in the 'beforeEach' already
+                // so we'll just set it back to 'undefined' here
+                Component.board = undefined;
+                expect(() => {
+                    wire1.place([0,0], [1,1]); 
+                }).toThrowError('Component.board not set!');
             });
 
             it('should be placed into the right slots after calling place()', function() {
