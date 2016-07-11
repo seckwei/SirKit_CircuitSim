@@ -4,7 +4,7 @@
  * @property {Map}      occupiedSlots   List of occupied slots on the board
  * @property {Map}      components      List of components on the board
  * @property {boolean}  closed          Indicates whether the circuit on the board is closed or not
- * @property {Array[]}  circuits        2D array - Each item in this array stores an array of a circuit's node positions. Example: [[[0,5],[0,6]], [[1,2]]]. Circuit 1's nodes are [0,5] and [0,6]; and Circuit 2's is [1,2].
+ * @property {Circuit[]}  circuits      Each item in this array stores a Circuit object
  */
 
 'use strict';
@@ -226,28 +226,18 @@ let Board = function Board(width = 10, height = 10) {
         return found;
     }
 
-    /**
-     * Creates a new array to store a new circuit's node positions
-     * 
-     * @public
-     * @instance
-     * @method createCircuit
-     */
-    function createCircuit(){
-        circuits.push([]);
-    }
 
     /**
-     * Adds the position to the LATEST circuit's array of node positions
+     * Adds given circuit to the array of circuits
      * 
-     * @public
+     * @protected
      * @instance
-     * @method addToCircuit
-     * @param {Position} pos
+     * @method addCircuit
+     * @param {Circuit} circuit
+     * @see [Circuit]{@link module:Circuit} module
      */
-    function addToCircuit(pos){
-        // Push to the latest array
-        circuits[circuits.length-1].push(pos);
+    function addCircuit(circuit){ 
+        circuits.push(circuit); 
     }
     
     return {
@@ -256,14 +246,13 @@ let Board = function Board(width = 10, height = 10) {
         components: components,
         closed: closed,
         get circuits () { return circuits; },
+        addCircuit: addCircuit,
         getSlot: getSlot,
         place: place,
         remove: remove,
         get activeSources() { return getActiveSources(); },
         get hasUnfinishedNode() { return hasUnfinishedNode(); },
-        hasType: hasType,
-        createCircuit: createCircuit,
-        addToCircuit: addToCircuit
+        hasType: hasType
     };
 };
 

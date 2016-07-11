@@ -11,21 +11,25 @@ describe('Sirkit', function() {
 
         Component.board = window.board;
 
-        let num_of_components = 50;
-        while (num_of_components-- !== 1) {
-            window['wire' + num_of_components] = new Component({
-                label: 'Wire' + num_of_components,
+        let num = 50;
+        while (num-- !== 1) {
+            // Components
+            window['wire' + num] = new Component({
+                label: 'Wire' + num,
                 type: ComponentType.Connector
             });
-            window['batt' + num_of_components] = new Component({
-                label: 'Battery' + num_of_components,
+            window['batt' + num] = new Component({
+                label: 'Battery' + num,
                 type: ComponentType.Source
             });
-            window['ground' + num_of_components] = new Component({
-                label: 'Ground' + num_of_components,
+            window['ground' + num] = new Component({
+                label: 'Ground' + num,
                 type: ComponentType.Ground,
                 openEnded: true
             });
+
+            // Circuit
+            window['circuit' + num] = new Circuit(board);
         }
 
         window.traverser = Traverser();
@@ -186,50 +190,44 @@ describe('Sirkit', function() {
                 expect(board.hasType(ComponentType.Ground)).toBe(true);
             });
 
-            it('createCircuit() method should create a new and empty array in the circuits field', function(){
-                
-                expect(board.circuits.length).toBe(0);
-                
-                for(let i of [1,2,3,4,5]){
-                    board.createCircuit();
-                    expect(board.circuits.length).toBe(i);
-                    expect(board.circuits[board.circuits.length-1]).toEqual([]);
-                }
-                
-            })
-
-            it('addToCircuit() method should taken in and add the position to the latest circuits array', function(){
-                board.createCircuit();
-                board.addToCircuit([0,5]);
-                expect(board.circuits[0][0]).toEqual([0,5]);
-
-                board.addToCircuit([10,15]);
-                expect(board.circuits[0][1]).toEqual([10,15]);
-
-                board.createCircuit();
-                board.addToCircuit([9,9]);
-                expect(board.circuits[1][0]).toEqual([9,9]);
-            });
-
             describe('circuits field (after running Traverser._checkClosedCircuit)', function() {
 
-                it('should have two array of nodes if the board has two closed circuit with true node(s)', function(){
+                it('should have two circuits if the board has two closed circuit with true node(s)', function(){
 
                     batt1.place([0,0], [0,5]);
                     wire1.place([0,0], [5,0]);
                     wire2.place([5,0], [0,5]);
-                    ground1.place([0,5], [0,10]); // true node positions is [0,5]
+                    ground1.place([0,5], [0,10]); // true node and ground position is [0,5]
 
                     traverser._checkClosedCircuit(board);
-                    expect(board.circuits[0][0]).toEqual([0,5])
 
-                    batt2.place([10,10], [10,15]);
-                    wire3.place([10,10], [15,10]);
-                    wire4.place([15,10], [10,15]);
-                    ground2.place([10,15], [10,20]); // true node positions is [10,15]
+                    // empty because there's only one node which is the ground / reference node
+                    expect(board.circuits[0].nodes).toEqual([]);
+                    expect(board.circuits[0].ground).toEqual([0,5]);
+
+
+                    /**
+                     *    10,10
+                     *      +-----+
+                     *      |    /|
+                     *      |   / |
+                     *      |  /  |
+                     *      | /   |
+                     *      +-----+
+                     *      |     20,20
+                     *      G
+                     */
+
+                    batt2.place([10,10], [10,20]);
+                    wire3.place([10,10], [20,10]);
+                    wire4.place([20,10], [20,20]);
+                    wire5.place([20,20], [10,20]);
+                    wire6.place([20,10], [10,20]);
+                    ground2.place([20,10], [30,10]); // true node positions are [20,10] and [10,20] 
 
                     traverser._checkClosedCircuit(board);
-                    expect(board.circuits[1][0]).toEqual([10,15])
+                    expect(board.circuits[1].nodes).toEqual([[10,20]]);
+                    expect(board.circuits[1].ground).toEqual([20,10]);
 
                 });
             });
@@ -455,6 +453,66 @@ describe('Sirkit', function() {
                     expect(Component.hasDuplicatePositions(positions)).toBe(false);
                 });
 
+            });
+        });
+
+        describe('Circuit', function() {
+            
+            it('should create a Circuit object when called with new', function(){
+                expect(
+                    Object.keys(new Circuit(board)).sort()
+                ).toEqual(
+                    Object.keys({
+                        nodes: [],
+                        ground: undefined,
+                        board : board
+                    }).sort()
+                );
+            });
+
+            it('should throw an error if no board is passed into the constructor', function(){
+                expect(() => { new Circuit(); }).toThrowError();
+            });
+
+            describe('addNode method', function(){
+
+                it('should take in a position and push into the nodes field', function(){
+                    circuit1.addNode([1,2]);
+                    circuit1.addNode([3,3]);
+                    circuit1.setGround([2,2]);
+                    expect(circuit1.nodes).toEqual([[1,2], [3,3]])
+                });
+            });
+
+            describe('setGround method', function(){
+
+                it('should take in a position and set it to the ground field', function(){
+                    circuit1.setGround([1,2]);
+                    expect(circuit1.ground).toEqual([1,2]);
+                });
+
+                it('should throw an error if ground field is already defined', function(){
+                    circuit1.setGround([1,2]);
+                    expect(() => { circuit1.setGround([2,2]); }).toThrowError('Each circuit can only have one ground/reference node');
+                });
+            });
+
+            describe('addToBoard method', function(){
+
+                it('should throw an error if the ground is still undefined', function(){
+                    circuit1.addNode([1,2]);
+                    expect(circuit1.addToBoard).toThrowError();
+                });
+
+                it('should add the circuit to the board', function(){
+                    circuit1.addNode([1,2]);
+                    circuit1.addNode([3,3]);
+                    circuit1.setGround([2,2]);
+                    
+                    circuit1.addToBoard();
+                    expect(board.circuits[0].nodes).toEqual([[1,2], [3,3]]);
+                    expect(board.circuits[0].ground).toEqual([2,2]);
+                });
             });
         });
 

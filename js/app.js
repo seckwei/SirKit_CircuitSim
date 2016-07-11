@@ -4,3 +4,4 @@ window.Slot = require('./Slot');
 window.Component = require('./Component');
 window.ComponentType = require('./ComponentType');
 window.Traverser = require('./Traverser');
+window.Circuit = require('./Circuit');
