@@ -11,21 +11,25 @@ describe('Sirkit', function() {
 
         Component.board = window.board;
 
-        let num_of_components = 50;
-        while (num_of_components-- !== 1) {
-            window['wire' + num_of_components] = new Component({
-                label: 'Wire' + num_of_components,
+        let num = 50;
+        while (num-- !== 1) {
+            // Components
+            window['wire' + num] = new Component({
+                label: 'Wire' + num,
                 type: ComponentType.Connector
             });
-            window['batt' + num_of_components] = new Component({
-                label: 'Battery' + num_of_components,
+            window['batt' + num] = new Component({
+                label: 'Battery' + num,
                 type: ComponentType.Source
             });
-            window['ground' + num_of_components] = new Component({
-                label: 'Ground' + num_of_components,
+            window['ground' + num] = new Component({
+                label: 'Ground' + num,
                 type: ComponentType.Ground,
                 openEnded: true
             });
+
+            // Circuit
+            window['circuit' + num] = new Circuit(board);
         }
 
         window.traverser = Traverser();
@@ -186,50 +190,44 @@ describe('Sirkit', function() {
                 expect(board.hasType(ComponentType.Ground)).toBe(true);
             });
 
-            it('createCircuit() method should create a new and empty array in the circuits field', function(){
-                
-                expect(board.circuits.length).toBe(0);
-                
-                for(let i of [1,2,3,4,5]){
-                    board.createCircuit();
-                    expect(board.circuits.length).toBe(i);
-                    expect(board.circuits[board.circuits.length-1]).toEqual([]);
-                }
-                
-            })
-
-            it('addToCircuit() method should taken in and add the position to the latest circuits array', function(){
-                board.createCircuit();
-                board.addToCircuit([0,5]);
-                expect(board.circuits[0][0]).toEqual([0,5]);
-
-                board.addToCircuit([10,15]);
-                expect(board.circuits[0][1]).toEqual([10,15]);
-
-                board.createCircuit();
-                board.addToCircuit([9,9]);
-                expect(board.circuits[1][0]).toEqual([9,9]);
-            });
-
             describe('circuits field (after running Traverser._checkClosedCircuit)', function() {
 
-                it('should have two array of nodes if the board has two closed circuit with true node(s)', function(){
+                it('should have two circuits if the board has two closed circuit with true node(s)', function(){
 
                     batt1.place([0,0], [0,5]);
                     wire1.place([0,0], [5,0]);
                     wire2.place([5,0], [0,5]);
-                    ground1.place([0,5], [0,10]); // true node positions is [0,5]
+                    ground1.place([0,5], [0,10]); // true node and ground position is [0,5]
 
                     traverser._checkClosedCircuit(board);
-                    expect(board.circuits[0][0]).toEqual([0,5])
 
-                    batt2.place([10,10], [10,15]);
-                    wire3.place([10,10], [15,10]);
-                    wire4.place([15,10], [10,15]);
-                    ground2.place([10,15], [10,20]); // true node positions is [10,15]
+                    // empty because there's only one node which is the ground / reference node
+                    expect(board.circuits[0].nodes).toEqual([]);
+                    expect(board.circuits[0].ground).toEqual([0,5]);
+
+
+                    /**
+                     *    10,10
+                     *      +-----+
+                     *      |    /|
+                     *      |   / |
+                     *      |  /  |
+                     *      | /   |
+                     *      +-----+
+                     *      |     20,20
+                     *      G
+                     */
+
+                    batt2.place([10,10], [10,20]);
+                    wire3.place([10,10], [20,10]);
+                    wire4.place([20,10], [20,20]);
+                    wire5.place([20,20], [10,20]);
+                    wire6.place([20,10], [10,20]);
+                    ground2.place([20,10], [30,10]); // true node positions are [20,10] and [10,20] 
 
                     traverser._checkClosedCircuit(board);
-                    expect(board.circuits[1][0]).toEqual([10,15])
+                    expect(board.circuits[1].nodes).toEqual([[10,20]]);
+                    expect(board.circuits[1].ground).toEqual([20,10]);
 
                 });
             });
@@ -458,242 +456,307 @@ describe('Sirkit', function() {
             });
         });
 
+        describe('Circuit', function() {
+            
+            it('should create a Circuit object when called with new', function(){
+                expect(
+                    Object.keys(new Circuit(board)).sort()
+                ).toEqual(
+                    Object.keys({
+                        nodes: [],
+                        ground: undefined,
+                        board : board
+                    }).sort()
+                );
+            });
+
+            it('should throw an error if no board is passed into the constructor', function(){
+                expect(() => { new Circuit(); }).toThrowError();
+            });
+
+            describe('addNode method', function(){
+
+                it('should take in a position and push into the nodes field', function(){
+                    circuit1.addNode([1,2]);
+                    circuit1.addNode([3,3]);
+                    circuit1.setGround([2,2]);
+                    expect(circuit1.nodes).toEqual([[1,2], [3,3]])
+                });
+            });
+
+            describe('setGround method', function(){
+
+                it('should take in a position and set it to the ground field', function(){
+                    circuit1.setGround([1,2]);
+                    expect(circuit1.ground).toEqual([1,2]);
+                });
+
+                it('should throw an error if ground field is already defined', function(){
+                    circuit1.setGround([1,2]);
+                    expect(() => { circuit1.setGround([2,2]); }).toThrowError('Each circuit can only have one ground/reference node');
+                });
+            });
+
+            describe('addToBoard method', function(){
+
+                it('should throw an error if the ground is still undefined', function(){
+                    circuit1.addNode([1,2]);
+                    expect(circuit1.addToBoard).toThrowError();
+                });
+
+                it('should add the circuit to the board', function(){
+                    circuit1.addNode([1,2]);
+                    circuit1.addNode([3,3]);
+                    circuit1.setGround([2,2]);
+                    
+                    circuit1.addToBoard();
+                    expect(board.circuits[0].nodes).toEqual([[1,2], [3,3]]);
+                    expect(board.circuits[0].ground).toEqual([2,2]);
+                });
+            });
+        });
+
     });
 
     describe('Sirkit\'s Traverser Module', function() {
 
-        describe('private method _deactivateOpenBranches()', function() {
-            /*
-                Branch with an open-end ends with a non-open-ended component.
-                e.g. a resistor that is connected to a closed-circuit on one end but not on the other.
-                
-                Branch without an open-end ends with an open-ended component (e.g. ground) OR
-                the branch is connected to a closed circuit on both ends.
-            */
-            it('should deactivate branches with an open-end', function() {
-                // Components are non-open-ended and active by default
-                wire1.place([0, 0], [0, 2]);
+        describe('private method', function(){
 
-                // Three wires connected but has open ends
-                wire2.place([1, 0], [1, 1]);
-                wire3.place([1, 1], [2, 2]);
-                wire4.place([2, 2], [3, 3]);
+            describe('_deactivateOpenBranches', function() {
+                /*
+                    Branch with an open-end ends with a non-open-ended component.
+                    e.g. a resistor that is connected to a closed-circuit on one end but not on the other.
+                    
+                    Branch without an open-end ends with an open-ended component (e.g. ground) OR
+                    the branch is connected to a closed circuit on both ends.
+                */
+                it('should deactivate branches with an open-end', function() {
+                    // Components are non-open-ended and active by default
+                    wire1.place([0, 0], [0, 2]);
 
-                let arr = [1, 2, 3, 4];
+                    // Three wires connected but has open ends
+                    wire2.place([1, 0], [1, 1]);
+                    wire3.place([1, 1], [2, 2]);
+                    wire4.place([2, 2], [3, 3]);
 
-                for (let i of arr) {
-                    expect(window['wire' + i].active).toBe(true);
-                }
+                    let arr = [1, 2, 3, 4];
 
-                traverser._deactivateOpenBranches(board);
+                    for (let i of arr) {
+                        expect(window['wire' + i].active).toBe(true);
+                    }
 
-                for (let i of arr) {
-                    expect(window['wire' + i].active).toBe(false);
-                }
+                    traverser._deactivateOpenBranches(board);
+
+                    for (let i of arr) {
+                        expect(window['wire' + i].active).toBe(false);
+                    }
+                });
+
+                it('should deactivate branches with an open-end, even though it has open-ended components', function() {
+                    // Connected to ground but wire 3 is open
+                    ground1.place([1, 1], [0, 0]);
+                    wire1.place([1, 1], [2, 2]);
+                    wire2.place([2, 2], [3, 3]);
+
+                    expect(ground1.active).toBe(true);
+                    expect(wire1.active).toBe(true);
+                    expect(wire2.active).toBe(true);
+
+                    traverser._deactivateOpenBranches(board);
+
+                    expect(ground1.active).toBe(false);
+                    expect(wire1.active).toBe(false);
+                    expect(wire2.active).toBe(false);
+                });
+
+                it('should NOT deactivate branches without an open-end', function() {
+                    // Closed circuit
+                    wire1.place([0, 0], [0, 2]);
+                    wire2.place([0, 2], [1, 2]);
+                    wire3.place([1, 2], [0, 0]);
+
+                    // Open ended component
+                    wire4.place([1, 2], [6, 6]);
+                    wire4.openEnded = true;
+
+                    // Open ended branch
+                    wire5.place([0, 2], [5, 5])
+
+                    let arr = [1, 2, 3, 4];
+
+                    // All components are active by default
+                    for (let i of arr) {
+                        expect(window['wire' + i].active).toBe(true);
+                    }
+                    expect(wire5.active).toBe(true);
+
+                    traverser._deactivateOpenBranches(board);
+
+                    // Only those that are connected to each other (except for open-ended components) should be remain active
+                    for (let i of arr) {
+                        expect(window['wire' + i].active).toBe(true);
+                    }
+                    expect(wire5.active).toBe(false);
+
+                });
             });
 
-            it('should deactivate branches with an open-end, even though it has open-ended components', function() {
-                // Connected to ground but wire 3 is open
-                ground1.place([1, 1], [0, 0]);
-                wire1.place([1, 1], [2, 2]);
-                wire2.place([2, 2], [3, 3]);
+            describe('_checkSourceExists', function() {
 
-                expect(ground1.active).toBe(true);
-                expect(wire1.active).toBe(true);
-                expect(wire2.active).toBe(true);
+                it('should throw error if there are no source components found on the board', function() {
+                    wire1.place([0, 0], [1, 1]);
+                    expect(traverser._checkSourceExists.bind(null, board)).toThrowError('No source component found!');
+                });
 
-                traverser._deactivateOpenBranches(board);
+                it('should not throw error if there is any source component on the board', function() {
+                    batt1.place([0, 0], [1, 1]);
+                    expect(traverser._checkSourceExists.bind(null, board)).not.toThrowError();
+                });
 
-                expect(ground1.active).toBe(false);
-                expect(wire1.active).toBe(false);
-                expect(wire2.active).toBe(false);
-            });
-
-            it('should NOT deactivate branches without an open-end', function() {
-                // Closed circuit
-                wire1.place([0, 0], [0, 2]);
-                wire2.place([0, 2], [1, 2]);
-                wire3.place([1, 2], [0, 0]);
-
-                // Open ended component
-                wire4.place([1, 2], [6, 6]);
-                wire4.openEnded = true;
-
-                // Open ended branch
-                wire5.place([0, 2], [5, 5])
-
-                let arr = [1, 2, 3, 4];
-
-                // All components are active by default
-                for (let i of arr) {
-                    expect(window['wire' + i].active).toBe(true);
-                }
-                expect(wire5.active).toBe(true);
-
-                traverser._deactivateOpenBranches(board);
-
-                // Only those that are connected to each other (except for open-ended components) should be remain active
-                for (let i of arr) {
-                    expect(window['wire' + i].active).toBe(true);
-                }
-                expect(wire5.active).toBe(false);
-
-            });
-        });
-
-        describe('private method _checkSourceExists()', function() {
-
-            it('should throw error if there are no source components found on the board', function() {
-                wire1.place([0, 0], [1, 1]);
-                expect(traverser._checkSourceExists.bind(null, board)).toThrowError('No source component found!');
-            });
-
-            it('should not throw error if there is any source component on the board', function() {
-                batt1.place([0, 0], [1, 1]);
-                expect(traverser._checkSourceExists.bind(null, board)).not.toThrowError();
-            });
-
-        });
-        
-        describe('private method _checkGroundExists()', function() {
-
-            it('should throw error if there are no source components found on the board', function() {
-                wire1.place([0, 0], [1, 1]);
-                expect(traverser._checkGroundExists.bind(null, board)).toThrowError('No ground component found!');
-            });
-
-            it('should not throw error if there is any source component on the board', function() {
-                ground1.place([0, 0], [1, 1]);
-                expect(traverser._checkGroundExists.bind(null, board)).not.toThrowError();
-            });
-
-        });
-
-        describe('private method _checkClosedCircuit()', function() {
-
-            it('should throw an error if the circuit is not closed', function() {
-                // Circuit not closed, because battery is on an open-ended branch
-                batt1.place([1, 1], [0, 2])
-                wire1.place([0, 2], [0, 3]);
-                wire2.place([1, 0], [0, 0]);
-                wire3.place([2, 0], [2, 1]);
-                ground1.place([2, 1], [2, 5]);
-
-                expect(traverser._checkClosedCircuit.bind(null, board)).toThrowError('No closed circuit found');
-                expect(board.closed).toBe(false);
-            });
-
-            it('should not throw an error if the circuit is closed', function() {
-                // These three are connected to each other
-                
-                batt1.place([0, 0], [0, 1]);
-                wire2.place([0, 1], [1, 1]);
-                wire3.place([1, 1], [0, 0]);
-                ground1.place([0, 0], [5, 5]);
-
-                // One stray component
-                wire4.place([4, 5], [5, 6]);
-                
-                expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
-                expect(board.closed).toBe(true);
-                expect(batt1.traveled).toBe(true);
-                expect(wire2.traveled).toBe(true);
-                expect(wire3.traveled).toBe(true);
-                expect(ground1.traveled).toBe(true);
-                
-                expect(wire4.traveled).toBe(false);
             });
             
-            it('should work for circuits with nodes too', function() {
-                let node1 = [2,5],
-                    node2 = [6,5];
-                
-                batt1.place([2,2], [6,2]);
-                wire1.place([2,2], node1);
-                wire2.place(node1, [2,8]);
-                wire3.place([6,2], node2);
-                wire4.place(node2, [6,8]);
-                wire5.place(node1, node2);
-                wire6.place([2,8], [6,8]);
-                ground1.place([6,8], [6,10]);
-                
-                /*              Node1
-                    B+ ---wire1---+---wire2---+
-                    |             |           |
-                    |batt1        |wire5      |wire6
-                    |             |           |
-                    B- ---wire3---+---wire4---+---GND
-                                Node2
-                */
-                
-                expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
-                expect(batt1.traveled).toBe(true);
-                expect(ground1.traveled).toBe(true);
-                for(let i of [1,2,3,4,5,6]){
-                    expect(window['wire'+i].traveled).toBe(true);
-                }                
-                expect(board.closed).toBe(true);
+            describe('_checkGroundExists', function() {
+
+                it('should throw error if there are no source components found on the board', function() {
+                    wire1.place([0, 0], [1, 1]);
+                    expect(traverser._checkGroundExists.bind(null, board)).toThrowError('No ground component found!');
+                });
+
+                it('should not throw error if there is any source component on the board', function() {
+                    ground1.place([0, 0], [1, 1]);
+                    expect(traverser._checkGroundExists.bind(null, board)).not.toThrowError();
+                });
+
             });
-            
-            it('should work for more than one circuits', function(){
-                // Circuit 1
-                let node1 = [2,5],
-                    node2 = [6,5];
+
+            describe('_checkClosedCircuit', function() {
+
+                it('should throw an error if the circuit is not closed', function() {
+                    // Circuit not closed, because battery is on an open-ended branch
+                    batt1.place([1, 1], [0, 2])
+                    wire1.place([0, 2], [0, 3]);
+                    wire2.place([1, 0], [0, 0]);
+                    wire3.place([2, 0], [2, 1]);
+                    ground1.place([2, 1], [2, 5]);
+
+                    expect(traverser._checkClosedCircuit.bind(null, board)).toThrowError('No closed circuit found');
+                    expect(board.closed).toBe(false);
+                });
+
+                it('should not throw an error if the circuit is closed', function() {
+                    // These three are connected to each other
+                    
+                    batt1.place([0, 0], [0, 1]);
+                    wire2.place([0, 1], [1, 1]);
+                    wire3.place([1, 1], [0, 0]);
+                    ground1.place([0, 0], [5, 5]);
+
+                    // One stray component
+                    wire4.place([4, 5], [5, 6]);
+                    
+                    expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
+                    expect(board.closed).toBe(true);
+                    expect(batt1.traveled).toBe(true);
+                    expect(wire2.traveled).toBe(true);
+                    expect(wire3.traveled).toBe(true);
+                    expect(ground1.traveled).toBe(true);
+                    
+                    expect(wire4.traveled).toBe(false);
+                });
                 
-                batt1.place([2,2], [6,2]);
-                wire1.place([2,2], node1);
-                wire2.place(node1, [2,8]);
-                wire3.place([6,2], node2);
-                wire4.place(node2, [6,8]);
-                wire5.place(node1, node2);
-                wire6.place([2,8], [6,8]);
-                ground1.place([6,8], [6,10]);
+                it('should work for circuits with nodes too', function() {
+                    let node1 = [2,5],
+                        node2 = [6,5];
+                    
+                    batt1.place([2,2], [6,2]);
+                    wire1.place([2,2], node1);
+                    wire2.place(node1, [2,8]);
+                    wire3.place([6,2], node2);
+                    wire4.place(node2, [6,8]);
+                    wire5.place(node1, node2);
+                    wire6.place([2,8], [6,8]);
+                    ground1.place([6,8], [6,10]);
+                    
+                    /*              Node1
+                        B+ ---wire1---+---wire2---+
+                        |             |           |
+                        |batt1        |wire5      |wire6
+                        |             |           |
+                        B- ---wire3---+---wire4---+---GND
+                                    Node2
+                    */
+                    
+                    expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
+                    expect(batt1.traveled).toBe(true);
+                    expect(ground1.traveled).toBe(true);
+                    for(let i of [1,2,3,4,5,6]){
+                        expect(window['wire'+i].traveled).toBe(true);
+                    }                
+                    expect(board.closed).toBe(true);
+                });
                 
-                /*              Node1
-                    B+ ---wire1---+---wire2---+
-                    |             |           |
-                    |batt1        |wire5      |wire6
-                    |             |           |
-                    B- ---wire3---+---wire4---+---GND
-                                Node2
-                */
-                
-                expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
-                expect(batt1.traveled).toBe(true);
-                expect(ground1.traveled).toBe(true);
-                for(let i of [1,2,3,4,5,6]){
-                    expect(window['wire'+i].traveled).toBe(true);
-                }
-                
-                // Circuit 2
-                let node3 = [12,15],
-                    node4 = [16,15];
-                
-                batt2.place([12,12], [16,12]);
-                wire7.place([12,12], node1);
-                wire8.place(node1, [12,18]);
-                wire9.place([16,12], node2);
-                wire10.place(node2, [16,18]);
-                wire11.place(node1, node2);
-                wire12.place([12,18], [16,18]);
-                ground2.place([16,18], [16,20]);
-                
-                /*              Node3
-                    B+ ---wire7---+---wire8---+
-                    |             |           |
-                    |batt2        |wire11     |wire12
-                    |             |           |
-                    B- ---wire9---+---wire10--+---GND
-                                Node4
-                */
-                expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
-                expect(batt2.traveled).toBe(true);
-                expect(ground2.traveled).toBe(true);
-                for(let i of [7,8,9,10,11,12]){
-                    expect(window['wire'+i].traveled).toBe(true);
-                }
+                it('should work for more than one circuits', function(){
+                    // Circuit 1
+                    let node1 = [2,5],
+                        node2 = [6,5];
+                    
+                    batt1.place([2,2], [6,2]);
+                    wire1.place([2,2], node1);
+                    wire2.place(node1, [2,8]);
+                    wire3.place([6,2], node2);
+                    wire4.place(node2, [6,8]);
+                    wire5.place(node1, node2);
+                    wire6.place([2,8], [6,8]);
+                    ground1.place([6,8], [6,10]);
+                    
+                    /*              Node1
+                        B+ ---wire1---+---wire2---+
+                        |             |           |
+                        |batt1        |wire5      |wire6
+                        |             |           |
+                        B- ---wire3---+---wire4---+---GND
+                                    Node2
+                    */
+                    
+                    expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
+                    expect(batt1.traveled).toBe(true);
+                    expect(ground1.traveled).toBe(true);
+                    for(let i of [1,2,3,4,5,6]){
+                        expect(window['wire'+i].traveled).toBe(true);
+                    }
+                    
+                    // Circuit 2
+                    let node3 = [12,15],
+                        node4 = [16,15];
+                    
+                    batt2.place([12,12], [16,12]);
+                    wire7.place([12,12], node1);
+                    wire8.place(node1, [12,18]);
+                    wire9.place([16,12], node2);
+                    wire10.place(node2, [16,18]);
+                    wire11.place(node1, node2);
+                    wire12.place([12,18], [16,18]);
+                    ground2.place([16,18], [16,20]);
+                    
+                    /*              Node3
+                        B+ ---wire7---+---wire8---+
+                        |             |           |
+                        |batt2        |wire11     |wire12
+                        |             |           |
+                        B- ---wire9---+---wire10--+---GND
+                                    Node4
+                    */
+                    expect(traverser._checkClosedCircuit.bind(null, board)).not.toThrowError();
+                    expect(batt2.traveled).toBe(true);
+                    expect(ground2.traveled).toBe(true);
+                    for(let i of [7,8,9,10,11,12]){
+                        expect(window['wire'+i].traveled).toBe(true);
+                    }
+                });
             });
+
         });
+
     });
 });
 

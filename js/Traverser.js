@@ -88,7 +88,7 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
     }
 
     /**
-     * Traverses through each active source component to check if the circuit is closed or not
+     * Traverses through each active source component to check if any circuit is closed or not.
      * 
      * @private
      * @method checkClosedCircuit
@@ -112,12 +112,17 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
         activeSources.forEach((source)=>{
             traverseSource(board, source);
         });
+
+        if(!board.closed){
+            Utility.logger('No closed circuit found');
+        }
     }
 
 
     /**
      * Traverse through the circuit starting from the source component. <br>
      * Sets the Board.closed field to 'true' if circuit is closed. <br>
+     * In this process, the traverser also records each circuit's nodes' positions into a Circuit object, which wil then be stored in Board.circuits.
      * 
      * @private
      * @method traverseSource
@@ -134,8 +139,8 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
 
         source.traveled = true;
 
-        // Set up new array to store this circuit's nodes
-        board.createCircuit();
+        // Set up new Circuit object
+        let circuit = new Circuit(board);
 
         // Store the negative pin positions of the source so we can tell if we are back at source later
         let currentPos = source.pins[0],
@@ -193,6 +198,7 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
             }
             else {
                 trace('findUnfinishedNode', 'END OF TRAVERSAL');
+                circuit.addToBoard();
                 return true;
             }
         }
@@ -261,12 +267,12 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
         function existsInTrace(pos) {
             trace('existsInTrace', pos);
 
-            if(nodeTrace.find((node) => node.toString() === pos.toString())){
+            if(nodeTrace.find((node) => node.toString() === pos.toString())){ // Found in nodeTrace
                 backToLastNode();
             }
             else {
-                // Add to this circuit's node array
-                board.addToCircuit(pos);
+                // Add to this Circuit's node array
+                circuit.addNode(pos);
 
                 nodeTrace.push(pos);
                 goNextSlot(pos);
@@ -290,9 +296,11 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
 
             component.traveled = true;
             
-            // We don't need to go to the next slot if the current
-            // component is a ground
+            // We don't need to go to the next slot if the current component is a ground
             if(component.type === ComponentType.Ground) {
+                
+                // Add the last node's position as the ground node position
+                circuit.setGround(nodeTrace[nodeTrace.length-1]);
                 checkBackAtSource(pos);
             }
             else {
