@@ -88,7 +88,7 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
     }
 
     /**
-     * Traverses through each active source component to check if the circuit is closed or not
+     * Traverses through each active source component to check if any circuit is closed or not.
      * 
      * @private
      * @method checkClosedCircuit
@@ -112,12 +112,17 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
         activeSources.forEach((source)=>{
             traverseSource(board, source);
         });
+
+        if(!board.closed){
+            Utility.logger('No closed circuit found');
+        }
     }
 
 
     /**
      * Traverse through the circuit starting from the source component. <br>
      * Sets the Board.closed field to 'true' if circuit is closed. <br>
+     * In this process, the traverser also records each circuit's nodes' positions into a Circuit object, which wil then be stored in Board.circuits.
      * 
      * @private
      * @method traverseSource
