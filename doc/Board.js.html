@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Board.html">Board</a><ul class='methods'><li data-type='method'><a href="module-Board.html#addToCircuit">addToCircuit</a></li><li data-type='method'><a href="module-Board.html#Board">Board</a></li><li data-type='method'><a href="module-Board.html#createCircuit">createCircuit</a></li><li data-type='method'><a href="module-Board.html#getActiveSources">getActiveSources</a></li><li data-type='method'><a href="module-Board.html#hasType">hasType</a></li><li data-type='method'><a href="module-Board.html#hasUnfinishedNode">hasUnfinishedNode</a></li><li data-type='method'><a href="module-Board.html#place">place</a></li><li data-type='method'><a href="module-Board.html#remove">remove</a></li></ul></li><li><a href="module-Component.html">Component</a><ul class='methods'><li data-type='method'><a href="module-Component.html#.hasDuplicatePositions">hasDuplicatePositions</a></li><li data-type='method'><a href="module-Component.html#getOtherPins">getOtherPins</a></li><li data-type='method'><a href="module-Component.html#place">place</a></li><li data-type='method'><a href="module-Component.html#remove">remove</a></li></ul></li><li><a href="module-Slot.html">Slot</a><ul class='methods'><li data-type='method'><a href="module-Slot.html#add">add</a></li><li data-type='method'><a href="module-Slot.html#remove">remove</a></li></ul></li><li><a href="module-Traverser.html">Traverser</a><ul class='methods'><li data-type='method'><a href="module-Traverser.html#start">start</a></li><li data-type='method'><a href="module-Traverser.html#Traverser">Traverser</a></li></ul></li><li><a href="module-Utility.html">Utility</a><ul class='methods'><li data-type='method'><a href="module-Utility.html#.hasDuplicatePositions">hasDuplicatePositions</a></li><li data-type='method'><a href="module-Utility.html#.isNumber">isNumber</a></li><li data-type='method'><a href="module-Utility.html#.logger">logger</a></li></ul></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-problem-and-solution.html">Problem and Solution</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Board.html">Board</a><ul class='methods'><li data-type='method'><a href="module-Board.html#addCircuit">addCircuit</a></li><li data-type='method'><a href="module-Board.html#Board">Board</a></li><li data-type='method'><a href="module-Board.html#getActiveSources">getActiveSources</a></li><li data-type='method'><a href="module-Board.html#hasType">hasType</a></li><li data-type='method'><a href="module-Board.html#hasUnfinishedNode">hasUnfinishedNode</a></li><li data-type='method'><a href="module-Board.html#place">place</a></li><li data-type='method'><a href="module-Board.html#remove">remove</a></li></ul></li><li><a href="module-Circuit.html">Circuit</a><ul class='methods'><li data-type='method'><a href="module-Circuit.html#addNode">addNode</a></li><li data-type='method'><a href="module-Circuit.html#addToBoard">addToBoard</a></li><li data-type='method'><a href="module-Circuit.html#setGround">setGround</a></li></ul></li><li><a href="module-Component.html">Component</a><ul class='methods'><li data-type='method'><a href="module-Component.html#.hasDuplicatePositions">hasDuplicatePositions</a></li><li data-type='method'><a href="module-Component.html#getOtherPins">getOtherPins</a></li><li data-type='method'><a href="module-Component.html#place">place</a></li><li data-type='method'><a href="module-Component.html#remove">remove</a></li></ul></li><li><a href="module-Slot.html">Slot</a><ul class='methods'><li data-type='method'><a href="module-Slot.html#add">add</a></li><li data-type='method'><a href="module-Slot.html#remove">remove</a></li></ul></li><li><a href="module-Traverser.html">Traverser</a><ul class='methods'><li data-type='method'><a href="module-Traverser.html#start">start</a></li><li data-type='method'><a href="module-Traverser.html#Traverser">Traverser</a></li></ul></li><li><a href="module-Utility.html">Utility</a><ul class='methods'><li data-type='method'><a href="module-Utility.html#.hasDuplicatePositions">hasDuplicatePositions</a></li><li data-type='method'><a href="module-Utility.html#.isNumber">isNumber</a></li><li data-type='method'><a href="module-Utility.html#.logger">logger</a></li></ul></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-problem-and-solution.html">Problem and Solution</a></li></ul>
 </nav>
 
 <div id="main">
@@ -43,7 +43,7 @@
  * @property {Map}      occupiedSlots   List of occupied slots on the board
  * @property {Map}      components      List of components on the board
  * @property {boolean}  closed          Indicates whether the circuit on the board is closed or not
- * @property {Array[]}  circuits        2D array - Each item in this array stores an array of a circuit's node positions. Example: [[[0,5],[0,6]], [[1,2]]]. Circuit 1's nodes are [0,5] and [0,6]; and Circuit 2's is [1,2].
+ * @property {Circuit[]}  circuits      Each item in this array stores a Circuit object
  */
 
 'use strict';
@@ -265,28 +265,18 @@ let Board = function Board(width = 10, height = 10) {
         return found;
     }
 
-    /**
-     * Creates a new array to store a new circuit's node positions
-     * 
-     * @public
-     * @instance
-     * @method createCircuit
-     */
-    function createCircuit(){
-        circuits.push([]);
-    }
 
     /**
-     * Adds the position to the LATEST circuit's array of node positions
+     * Adds given circuit to the array of circuits
      * 
-     * @public
+     * @protected
      * @instance
-     * @method addToCircuit
-     * @param {Position} pos
+     * @method addCircuit
+     * @param {Circuit} circuit
+     * @see [Circuit]{@link module:Circuit} module
      */
-    function addToCircuit(pos){
-        // Push to the latest array
-        circuits[circuits.length-1].push(pos);
+    function addCircuit(circuit){ 
+        circuits.push(circuit); 
     }
     
     return {
@@ -295,14 +285,13 @@ let Board = function Board(width = 10, height = 10) {
         components: components,
         closed: closed,
         get circuits () { return circuits; },
+        addCircuit: addCircuit,
         getSlot: getSlot,
         place: place,
         remove: remove,
         get activeSources() { return getActiveSources(); },
         get hasUnfinishedNode() { return hasUnfinishedNode(); },
-        hasType: hasType,
-        createCircuit: createCircuit,
-        addToCircuit: addToCircuit
+        hasType: hasType
     };
 };
 
@@ -318,7 +307,7 @@ module.exports = Board;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Sun Jul 10 2016 23:12:26 GMT+0100 (GMT Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Jul 12 2016 21:01:18 GMT+0100 (GMT Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

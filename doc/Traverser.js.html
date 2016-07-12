@@ -22,7 +22,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Board.html">Board</a><ul class='methods'><li data-type='method'><a href="module-Board.html#addToCircuit">addToCircuit</a></li><li data-type='method'><a href="module-Board.html#Board">Board</a></li><li data-type='method'><a href="module-Board.html#createCircuit">createCircuit</a></li><li data-type='method'><a href="module-Board.html#getActiveSources">getActiveSources</a></li><li data-type='method'><a href="module-Board.html#hasType">hasType</a></li><li data-type='method'><a href="module-Board.html#hasUnfinishedNode">hasUnfinishedNode</a></li><li data-type='method'><a href="module-Board.html#place">place</a></li><li data-type='method'><a href="module-Board.html#remove">remove</a></li></ul></li><li><a href="module-Component.html">Component</a><ul class='methods'><li data-type='method'><a href="module-Component.html#.hasDuplicatePositions">hasDuplicatePositions</a></li><li data-type='method'><a href="module-Component.html#getOtherPins">getOtherPins</a></li><li data-type='method'><a href="module-Component.html#place">place</a></li><li data-type='method'><a href="module-Component.html#remove">remove</a></li></ul></li><li><a href="module-Slot.html">Slot</a><ul class='methods'><li data-type='method'><a href="module-Slot.html#add">add</a></li><li data-type='method'><a href="module-Slot.html#remove">remove</a></li></ul></li><li><a href="module-Traverser.html">Traverser</a><ul class='methods'><li data-type='method'><a href="module-Traverser.html#start">start</a></li><li data-type='method'><a href="module-Traverser.html#Traverser">Traverser</a></li></ul></li><li><a href="module-Utility.html">Utility</a><ul class='methods'><li data-type='method'><a href="module-Utility.html#.hasDuplicatePositions">hasDuplicatePositions</a></li><li data-type='method'><a href="module-Utility.html#.isNumber">isNumber</a></li><li data-type='method'><a href="module-Utility.html#.logger">logger</a></li></ul></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-problem-and-solution.html">Problem and Solution</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-Board.html">Board</a><ul class='methods'><li data-type='method'><a href="module-Board.html#addCircuit">addCircuit</a></li><li data-type='method'><a href="module-Board.html#Board">Board</a></li><li data-type='method'><a href="module-Board.html#getActiveSources">getActiveSources</a></li><li data-type='method'><a href="module-Board.html#hasType">hasType</a></li><li data-type='method'><a href="module-Board.html#hasUnfinishedNode">hasUnfinishedNode</a></li><li data-type='method'><a href="module-Board.html#place">place</a></li><li data-type='method'><a href="module-Board.html#remove">remove</a></li></ul></li><li><a href="module-Circuit.html">Circuit</a><ul class='methods'><li data-type='method'><a href="module-Circuit.html#addNode">addNode</a></li><li data-type='method'><a href="module-Circuit.html#addToBoard">addToBoard</a></li><li data-type='method'><a href="module-Circuit.html#setGround">setGround</a></li></ul></li><li><a href="module-Component.html">Component</a><ul class='methods'><li data-type='method'><a href="module-Component.html#.hasDuplicatePositions">hasDuplicatePositions</a></li><li data-type='method'><a href="module-Component.html#getOtherPins">getOtherPins</a></li><li data-type='method'><a href="module-Component.html#place">place</a></li><li data-type='method'><a href="module-Component.html#remove">remove</a></li></ul></li><li><a href="module-Slot.html">Slot</a><ul class='methods'><li data-type='method'><a href="module-Slot.html#add">add</a></li><li data-type='method'><a href="module-Slot.html#remove">remove</a></li></ul></li><li><a href="module-Traverser.html">Traverser</a><ul class='methods'><li data-type='method'><a href="module-Traverser.html#start">start</a></li><li data-type='method'><a href="module-Traverser.html#Traverser">Traverser</a></li></ul></li><li><a href="module-Utility.html">Utility</a><ul class='methods'><li data-type='method'><a href="module-Utility.html#.hasDuplicatePositions">hasDuplicatePositions</a></li><li data-type='method'><a href="module-Utility.html#.isNumber">isNumber</a></li><li data-type='method'><a href="module-Utility.html#.logger">logger</a></li></ul></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-problem-and-solution.html">Problem and Solution</a></li></ul>
 </nav>
 
 <div id="main">
@@ -127,7 +127,7 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
     }
 
     /**
-     * Traverses through each active source component to check if the circuit is closed or not
+     * Traverses through each active source component to check if any circuit is closed or not.
      * 
      * @private
      * @method checkClosedCircuit
@@ -151,12 +151,17 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
         activeSources.forEach((source)=>{
             traverseSource(board, source);
         });
+
+        if(!board.closed){
+            Utility.logger('No closed circuit found');
+        }
     }
 
 
     /**
      * Traverse through the circuit starting from the source component. &lt;br>
      * Sets the Board.closed field to 'true' if circuit is closed. &lt;br>
+     * In this process, the traverser also records each circuit's nodes' positions into a Circuit object, which wil then be stored in Board.circuits.
      * 
      * @private
      * @method traverseSource
@@ -173,8 +178,8 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
 
         source.traveled = true;
 
-        // Set up new array to store this circuit's nodes
-        board.createCircuit();
+        // Set up new Circuit object
+        let circuit = new Circuit(board);
 
         // Store the negative pin positions of the source so we can tell if we are back at source later
         let currentPos = source.pins[0],
@@ -232,6 +237,7 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
             }
             else {
                 trace('findUnfinishedNode', 'END OF TRAVERSAL');
+                circuit.addToBoard();
                 return true;
             }
         }
@@ -300,12 +306,12 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
         function existsInTrace(pos) {
             trace('existsInTrace', pos);
 
-            if(nodeTrace.find((node) => node.toString() === pos.toString())){
+            if(nodeTrace.find((node) => node.toString() === pos.toString())){ // Found in nodeTrace
                 backToLastNode();
             }
             else {
-                // Add to this circuit's node array
-                board.addToCircuit(pos);
+                // Add to this Circuit's node array
+                circuit.addNode(pos);
 
                 nodeTrace.push(pos);
                 goNextSlot(pos);
@@ -329,9 +335,11 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
 
             component.traveled = true;
             
-            // We don't need to go to the next slot if the current
-            // component is a ground
+            // We don't need to go to the next slot if the current component is a ground
             if(component.type === ComponentType.Ground) {
+                
+                // Add the last node's position as the ground node position
+                circuit.setGround(nodeTrace[nodeTrace.length-1]);
                 checkBackAtSource(pos);
             }
             else {
@@ -392,7 +400,7 @@ module.exports = Traverser;</code></pre>
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Sun Jul 10 2016 23:12:26 GMT+0100 (GMT Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Jul 12 2016 21:01:18 GMT+0100 (GMT Daylight Time) using the <a href="https://github.com/clenemt/docdash">docdash</a> theme.
 </footer>
 
 <script>prettyPrint();</script>

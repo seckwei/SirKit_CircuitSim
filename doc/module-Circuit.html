@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Slot - Documentation</title>
+    <title>Circuit - Documentation</title>
 
     <script src="scripts/prettify/prettify.js"></script>
     <script src="scripts/prettify/lang-css.js"></script>
@@ -27,7 +27,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">Slot</h1>
+    <h1 class="page-title">Circuit</h1>
     
 
     
@@ -49,7 +49,7 @@
     <div class="container-overview">
     
         
-            <div class="description">Slot module</div>
+            <div class="description">Circuit module</div>
         
 
         
@@ -63,7 +63,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Slot.js.html">Slot.js</a>, <a href="Slot.js.html#line1">line 1</a>
+        <a href="Circuit.js.html">Circuit.js</a>, <a href="Circuit.js.html#line1">line 1</a>
     </li></ul></dd>
     
 
@@ -126,13 +126,13 @@
 
         <tr>
             
-                <td class="name"><code>x</code></td>
+                <td class="name"><code>board</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">Board</span>
 
 
             
@@ -142,20 +142,20 @@
 
             
 
-            <td class="description last">Position x</td>
+            <td class="description last">Reference to the Board object</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>y</code></td>
+                <td class="name"><code>nodes</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">Array.&lt;Position></span>
 
 
             
@@ -165,20 +165,20 @@
 
             
 
-            <td class="description last">Position y</td>
+            <td class="description last">Array of true nodes' position</td>
         </tr>
 
     
 
         <tr>
             
-                <td class="name"><code>V</code></td>
+                <td class="name"><code>ground</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type">number</span>
+<span class="param-type">Position</span>
 
 
             
@@ -188,168 +188,7 @@
 
             
 
-            <td class="description last">Voltage through this slot</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>count</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Number of all connected Components</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>activeCount</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Number of all connected non-disabled/active Components</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>connections</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Map</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Map of Connections in this Slot. Key is component_id and Value is { pin_index, component }</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>activeConnections</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Map</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Same as connections property but only contains active ones</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>isTrueNode</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Indicates if this slot has >= 3 active connections or not</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>hasAllTraveled</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">boolean</span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Indicates if all components has been traveled by Traverser or not</td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>untraveledConnections</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">Array.&lt;Connection></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last">Array of all untraveled Connections</td>
+            <td class="description last">Position of the ground/reference node</td>
         </tr>
 
     
@@ -409,7 +248,7 @@
 
     
 
-    <h4 class="name" id="add"><span class="type-signature">(protected) </span>add<span class="signature">(component, pin_index)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="addNode"><span class="type-signature">(protected) </span>addNode<span class="signature">(pos)</span><span class="type-signature"></span></h4>
 
     
 
@@ -421,7 +260,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Slot.js.html">Slot.js</a>, <a href="Slot.js.html#line93">line 93</a>
+        <a href="Circuit.js.html">Circuit.js</a>, <a href="Circuit.js.html#line20">line 20</a>
     </li></ul></dd>
     
 
@@ -452,13 +291,6 @@
     
 
     
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>Use <a href="module-Component.html#place">Component#place</a> method instead</li>
-        </ul>
-    </dd>
-    
 
     
 </dl>
@@ -468,7 +300,7 @@
 
 
 <div class="description">
-    Add component to this Slot
+    Adds the given position to the list of nodes
 </div>
 
 
@@ -506,36 +338,13 @@
 
         <tr>
             
-                <td class="name"><code>component</code></td>
+                <td class="name"><code>pos</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="Component.html">Component</a></span>
-
-
-            
-            </td>
-
-            
-
-            
-
-            <td class="description last"></td>
-        </tr>
-
-    
-
-        <tr>
-            
-                <td class="name"><code>pin_index</code></td>
-            
-
-            <td class="type">
-            
-                
-<span class="param-type">number</span>
+<span class="param-type">Position</span>
 
 
             
@@ -572,7 +381,7 @@
 
     
 
-    <h4 class="name" id="remove"><span class="type-signature">(protected) </span>remove<span class="signature">(component)</span><span class="type-signature"></span></h4>
+    <h4 class="name" id="addToBoard"><span class="type-signature">(protected) </span>addToBoard<span class="signature">()</span><span class="type-signature"></span></h4>
 
     
 
@@ -584,7 +393,7 @@
     
     <dt class="tag-source">Source:</dt>
     <dd class="tag-source"><ul class="dummy"><li>
-        <a href="Slot.js.html">Slot.js</a>, <a href="Slot.js.html#line113">line 113</a>
+        <a href="Circuit.js.html">Circuit.js</a>, <a href="Circuit.js.html#line48">line 48</a>
     </li></ul></dd>
     
 
@@ -615,12 +424,89 @@
     
 
     
-    <dt class="tag-see">See:</dt>
-    <dd class="tag-see">
-        <ul>
-            <li>Use <a href="module-Component.html#remove">Component#remove</a> method instead</li>
-        </ul>
-    </dd>
+
+    
+</dl>
+
+
+
+
+
+<div class="description">
+    Adds this circuit to the Board.circuits field
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    <h4 class="name" id="setGround"><span class="type-signature">(protected) </span>setGround<span class="signature">(pos)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+
+<dl class="details">
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="Circuit.js.html">Circuit.js</a>, <a href="Circuit.js.html#line32">line 32</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
     
 
     
@@ -631,7 +517,7 @@
 
 
 <div class="description">
-    Remove component from this Slot
+    Set the given position as the ground node
 </div>
 
 
@@ -669,13 +555,13 @@
 
         <tr>
             
-                <td class="name"><code>component</code></td>
+                <td class="name"><code>pos</code></td>
             
 
             <td class="type">
             
                 
-<span class="param-type"><a href="Component.html">Component</a></span>
+<span class="param-type">Position</span>
 
 
             
