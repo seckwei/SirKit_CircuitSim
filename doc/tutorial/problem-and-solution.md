@@ -106,6 +106,18 @@ After substitution / Gaussian elimination, we get V<sub>2</sub> = -2V and `I` = 
 With that, we can continue solving for V<sub>1</sub> and the rest of the circuit. Big thanks to L.R.Linares' video on Modified Nodal Analysis that provided me with the V-branch equation, the key to solving this problem. 
 
 <br>
+## <a name="problem-5"></a>Problem #5
+
+I need to solve a system of linear equations, KCL equations in particular, for Nodal Analysis. [Algebra.js](http://algebra.js.org/) seems to be just the maths library I need, since it has `algebra.parse` to parse string into a simplified expression (go check it out, it's awesome!). Now, the problem is getting the KCL equation for each node - how is that suppose to work?
+
+## (Potential) Solution
+I haven't come up with one solid solution yet; however, what I have in mind now is for the traverser to go through each Circuit's node and have it to traverse each of the node's branches until it reaches another node or the ground. During the branch traversal, it will record the all resistance and voltage values for that branch in a Branch object.
+
+After creating and populating the Branch objects, the Circuit object will then generate the KCL equation for each Node. For Branches with no resistance i.e., a V-branch, it will be expressed as `I` (polarity will based on the direction of current. Refer to [Problem #3](#problem-3) for details calculating with a V-branch). Then, the generated KCL equations will be `algebra.parse`-ed, and we will get a system of simplified equations. 'Simplified' as in there's only one variable in the equation.
+
+After getting the KCL equations, I will need a way to extract the values and variables so that they can be 'Gaussion Eliminated'... so on and so forth until we get the voltage values for each node. 
+
+<br>
 ___
 
 ## <a name="resources"></a>Resources
