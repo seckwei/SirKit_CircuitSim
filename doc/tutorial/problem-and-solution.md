@@ -138,3 +138,4 @@ ___
 6. [Thom Wright's Circuit Sim](https://github.com/circuitsim/circuit-simulator) - pretty cool, pretty UI
 7. [Kazuhiko Arase's Circuit Sim](https://kazuhikoarase.github.io/simcirjs/) - Another cool HTML5/JS circuit sim
 8. [Sam Fentress @ Concord Consortium's Circuit Solver](https://github.com/concord-consortium/circuit-solver) - Not a sim, but it's almost one!
+9. 9. [Circuits Cloud](http://circuits-cloud.com/)
