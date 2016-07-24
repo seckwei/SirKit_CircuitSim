@@ -311,6 +311,86 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
     }
 
     /**
+     * After checking for closed circuit, we traverse through each circuit on the board
+     * to get the Voltage or Resistance values of each nodes' branches.
+     * 
+     * @private
+     * @method traverseCircuit
+     * @param {Board} board
+     */
+    function traverseCircuit(board) {
+        if(!board)
+            Utility.logger('No Board object passed in')
+
+        // Each circuit...
+        board.circuits.forEach((circuit) => {
+            // Each node...
+            circuit.nodes.forEach((node) => {
+                // Set every component to be 'untraveled'
+                // TODO: Circuit should have a collection of its components,
+                // so we don't have to reset every single Component's Traveled field
+                board.resetTraveled();
+
+                trace('New Node');
+
+                let slot = board.getSlot(node.position),
+                    branch;
+                // Each active connection...
+                for(let conn of slot.activeConnections.values()){
+                    branch = new Branch();
+                    determineComponent(circuit, branch, conn, node.position);
+                    node.addBranch(branch);
+                }
+
+            });
+        });
+
+        function determineComponent(circuit, branch, conn, pos) {
+            trace('determineComponent', conn.component.label, pos);
+
+	        switch(conn.component.type){
+	            case ComponentType.Resistor:
+	                branch.addR(conn.component.R);
+	                break;
+	            case ComponentType.Source:
+                    // Pin 0 is positive, so we negate the polarity of the voltage
+                    // because the current is going in the opposing direction when formulating
+                    // the KCL equation
+	                branch.addV(
+                        conn.component.V * 
+                        ((!!conn.pin)? 1: -1)
+                    );
+	                break;
+	        }
+            goNextSlot(circuit, branch, conn, pos);
+	    };
+
+        function goNextSlot(circuit, branch, conn, pos) {
+            trace('goNextSlot', branch, conn.component.label, pos);
+
+            conn.component.traveled = true;       
+            let nextPos = conn.component.getOtherPins(pos)[0];
+            
+            if(isNodeOrGround(circuit, nextPos)){
+                trace('returned');
+                return;
+            }
+            else {
+                let slot = board.getSlot(nextPos),
+                    nextConn = slot.untraveledConnections[0];
+
+                trace('recurse');
+                determineComponent(circuit, branch, nextConn, nextPos);
+            }
+        }
+
+        function isNodeOrGround(circuit, pos) {
+            return board.getSlot(pos).isTrueNode || 
+                circuit.ground.toString() === pos.toString();
+        }
+    }
+
+    /**
      * Start the traversal
      * 
      * @public
@@ -345,7 +425,8 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
         _checkSourceExists: checkSourceExists,
         _checkGroundExists: checkGroundExists,
         _deactivateOpenBranches: deactivateOpenBranches,
-        _checkClosedCircuit: checkClosedCircuit
+        _checkClosedCircuit: checkClosedCircuit,
+        _traverseCircuit: traverseCircuit
     };
 }
 

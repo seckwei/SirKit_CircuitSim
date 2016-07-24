@@ -239,6 +239,19 @@ let Board = function Board(width = 10, height = 10) {
     function addCircuit(circuit){ 
         circuits.push(circuit); 
     }
+
+    /**
+     * Resets all Component.traveled field to 'false'
+     * 
+     * @protected
+     * @instance
+     * @method resetTraveled
+     */
+    function resetTraveled() {
+        for(let component of this.components.values()){
+            component.traveled = component.traveled && false;
+        }
+    }
     
     return {
         board: board,
@@ -252,7 +265,8 @@ let Board = function Board(width = 10, height = 10) {
         remove: remove,
         get activeSources() { return getActiveSources(); },
         get hasUnfinishedNode() { return hasUnfinishedNode(); },
-        hasType: hasType
+        hasType: hasType,
+        resetTraveled: resetTraveled
     };
 };
 

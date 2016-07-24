@@ -26,7 +26,7 @@ class Circuit {
      * @param {Position} pos
      */
     addNode(pos) {
-        this.nodes.push(pos);
+        this.nodes.push(new Node(pos));
     }
 
     /**
@@ -60,7 +60,7 @@ class Circuit {
             Utility.logger('Circuit has no ground/reference node yet');
 
         // Separate ground node from other nodes by removing it from nodes field
-        let groundIdx = this.nodes.findIndex((node) => node.toString() === this.ground.toString());
+        let groundIdx = this.nodes.findIndex((node) => node.position.toString() === this.ground.toString());
         if(groundIdx >= 0)
             this.nodes.splice(groundIdx, 1);
 

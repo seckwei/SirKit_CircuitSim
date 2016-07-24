@@ -18,14 +18,23 @@ describe('Sirkit', function() {
                 label: 'Wire' + num,
                 type: ComponentType.Connector
             });
+
             window['batt' + num] = new Component({
                 label: 'Battery' + num,
-                type: ComponentType.Source
+                type: ComponentType.Source,
+                V: 5
             });
+
             window['ground' + num] = new Component({
                 label: 'Ground' + num,
                 type: ComponentType.Ground,
                 openEnded: true
+            });
+
+            window['R' + num] = new Component({
+                label: 'Resistor' + num,
+                type: ComponentType.Resistor,
+                R: 10
             });
 
             // Circuit
@@ -201,33 +210,38 @@ describe('Sirkit', function() {
 
                     traverser._checkClosedCircuit(board);
 
+                    circuit1.setGround([0,5])
+
                     // empty because there's only one node which is the ground / reference node
-                    expect(board.circuits[0].nodes).toEqual([]);
-                    expect(board.circuits[0].ground).toEqual([0,5]);
+                    expect(board.circuits[0]).toEqual(circuit1);
 
 
                     /**
                      *    10,10
-                     *      +-----+
-                     *      |    /|
-                     *      |   / |
-                     *      |  /  |
-                     *      | /   |
-                     *      +-----+
-                     *      |     20,20
+                     *      +----+----+
+                     * batt |    |    |
+                     *      |    |    |
+                     *      +----+----+
+                     *      |       30,30
                      *      G
                      */
 
-                    batt2.place([10,10], [10,20]);
+                    batt2.place([10,10], [10,30]);
                     wire3.place([10,10], [20,10]);
-                    wire4.place([20,10], [20,20]);
-                    wire5.place([20,20], [10,20]);
-                    wire6.place([20,10], [10,20]);
-                    ground2.place([20,10], [30,10]); // true node positions are [20,10] and [10,20] 
+                    wire4.place([20,10], [30,10]);
+                    wire5.place([10,30], [20,30]);
+                    wire6.place([20,30], [30,30]);
+                    wire7.place([20,10], [20,30]);
+                    wire8.place([30,10], [30,30]);
+                    ground2.place([10,30], [10,40]); // true node positions are [10,30], [20,10] and [20,30]
+
+                    circuit2.addNode([20,10]);
+                    circuit2.addNode([20,30]);
+                    circuit2.setGround([10,30]);
 
                     traverser._checkClosedCircuit(board);
-                    expect(board.circuits[1].nodes).toEqual([[10,20]]);
-                    expect(board.circuits[1].ground).toEqual([20,10]);
+                    expect(board.circuits[1].nodes.sort()).toEqual(circuit2.nodes.sort());
+                    expect(board.circuits[1].ground).toEqual(circuit2.ground);
 
                 });
             });
@@ -480,7 +494,7 @@ describe('Sirkit', function() {
                     circuit1.addNode([1,2]);
                     circuit1.addNode([3,3]);
                     circuit1.setGround([2,2]);
-                    expect(circuit1.nodes).toEqual([[1,2], [3,3]])
+                    expect(circuit1.nodes).toEqual([new Node([1,2]), new Node([3,3])])
                 });
             });
 
@@ -510,7 +524,7 @@ describe('Sirkit', function() {
                     circuit1.setGround([2,2]);
                     
                     circuit1.addToBoard();
-                    expect(board.circuits[0].nodes).toEqual([[1,2], [3,3]]);
+                    expect(board.circuits[0].nodes).toEqual([new Node([1,2]), new Node([3,3])]);
                     expect(board.circuits[0].ground).toEqual([2,2]);
                 });
             });
@@ -755,6 +769,89 @@ describe('Sirkit', function() {
                 });
             });
 
+            describe('_traverseCircuit', function(){
+                
+                it('should throw an error if no Board object is passed in', function(){
+                    expect(() => { traverser._traverseCircuit(); }).toThrowError('No Board object passed in');
+                });
+
+                it('should populate the right voltage and resistance values of all branches of a circuit', function(){
+                    //traverser = Traverser({ debug: true });
+
+                    let node1 = [5,0],
+                        node2 = [5,10];
+
+                    /**           N1
+                     *  B(+)------+--------+ 
+                     *  |         |        |
+                     *  |         R1       R2
+                     *  |         |        |
+                     *  B(-)--R3--+--------+
+                     *  |         N2
+                     *  |
+                     * Gnd
+                     */
+
+                    batt1.V = 5;
+                    batt1.place([0,0], [0,10]);
+
+                    wire1.place([0,0], node1);
+                    wire2.place(node1, [10,0]);
+                    wire3.place(node2, [10,10])
+
+                    R1.R = 100;
+                    R1.place(node1, node2);
+
+                    R2.R = 50;
+                    R2.place([10,0], [10,10]);
+
+                    R3.R = 20;
+                    R3.place([0,10], node2);
+                    
+                    ground1.place([0,10], [0,20]);
+
+                    traverser._checkClosedCircuit(board);
+                    traverser._traverseCircuit(board);
+
+                    let [N1, N2] = board.circuits[0].nodes,
+
+                        N1B1 = new Branch(),
+                        N1B2 = new Branch(),
+                        N1B3 = new Branch(),
+
+                        N2B1 = new Branch(),
+                        N2B2 = new Branch(),
+                        N2B3 = new Branch();
+
+                        N1B1.addV(-5);
+                        N1B2.addR(100);
+                        N1B3.addR(50);
+
+                        N2B1.addR(20);
+                        N2B2.addR(100);
+                        N2B3.addR(50);
+
+                    // Sort by Voltage first, then Resistance
+                    function branchSorter(b1, b2) {
+                        if(b1.Vs < b2.Vs){
+                            return -1;
+                        }
+                        else {
+                            if(b1.Rs < b2.Rs){
+                                return -1;
+                            }
+                            else {
+                                return 1;
+                            }
+                        }
+                    }
+
+                    expect(N1.branches.sort(branchSorter)).toEqual([N1B1, N1B2, N1B3].sort(branchSorter));
+                    expect(N2.branches.sort(branchSorter)).toEqual([N2B1, N2B2, N2B3].sort(branchSorter));
+
+                });
+
+            });
         });
 
     });
