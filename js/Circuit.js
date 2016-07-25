@@ -13,7 +13,7 @@ class Circuit {
             Utility.logger('Circuit needs to be initialised with a Board object passed in');
 
         this.board = board;
-        this.nodes = [];
+        this.nodes = new Map();
         this.ground = undefined;
     }
 
@@ -26,7 +26,8 @@ class Circuit {
      * @param {Position} pos
      */
     addNode(pos) {
-        this.nodes.push(new Node(pos));
+        let node = new Node(pos);
+        this.nodes.set(node.id, node);
     }
 
     /**
@@ -42,6 +43,18 @@ class Circuit {
             Utility.logger('Each circuit can only have one ground/reference node');
 
         this.ground = pos;
+
+        // Separate ground node from other nodes by removing it from nodes field
+        let groundKey;
+        for(let node of this.nodes.values()){
+            if(node.position.toString() === pos.toString()){
+                groundKey = node.id;
+                break;
+            }
+        }
+
+        if(!!groundKey)
+            this.nodes.delete(groundKey);
     }
 
 
@@ -58,11 +71,6 @@ class Circuit {
 
         if(!this.ground)
             Utility.logger('Circuit has no ground/reference node yet');
-
-        // Separate ground node from other nodes by removing it from nodes field
-        let groundIdx = this.nodes.findIndex((node) => node.position.toString() === this.ground.toString());
-        if(groundIdx >= 0)
-            this.nodes.splice(groundIdx, 1);
 
         this.board.addCircuit(this);
     }

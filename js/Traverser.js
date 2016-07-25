@@ -338,7 +338,10 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
                 // Each active connection...
                 for(let conn of slot.activeConnections.values()){
                     branch = new Branch();
+                    branch.start = node.id;
+
                     determineComponent(circuit, branch, conn, node.position);
+                    
                     node.addBranch(branch);
                 }
 
@@ -371,22 +374,30 @@ let Traverser = function Traverser({ debug = false } = { debug : false }) {
             conn.component.traveled = true;       
             let nextPos = conn.component.getOtherPins(pos)[0];
             
-            if(isNodeOrGround(circuit, nextPos)){
-                trace('returned');
+            if(circuit.ground.toString() === nextPos.toString()) {
+                trace('Ground found - returned');
+                branch.setEnd('ground');
                 return;
             }
-            else {
-                let slot = board.getSlot(nextPos),
-                    nextConn = slot.untraveledConnections[0];
+            else {  
+                if(board.getSlot(nextPos).isTrueNode){
+                    trace('Node found - returned');
 
-                trace('recurse');
-                determineComponent(circuit, branch, nextConn, nextPos);
+                    for(let node of circuit.nodes.values()){
+                        if(node.position.toString() === nextPos.toString()){
+                            branch.setEnd(node.id);
+                        }
+                    }
+                    return;
+                }
+                else {
+                    let slot = board.getSlot(nextPos),
+                        nextConn = slot.untraveledConnections[0];
+
+                    trace('recurse');
+                    determineComponent(circuit, branch, nextConn, nextPos);
+                }
             }
-        }
-
-        function isNodeOrGround(circuit, pos) {
-            return board.getSlot(pos).isTrueNode || 
-                circuit.ground.toString() === pos.toString();
         }
     }
 

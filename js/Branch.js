@@ -9,6 +9,9 @@ class Branch {
     constructor(){
         this.Rs = [];
         this.Vs = [];
+
+        this.start = '';
+        this.end = '';
     }
 
     addR(R) {
@@ -17,5 +20,13 @@ class Branch {
 
     addV(V) {
         this.Vs.push(V);
+    }
+
+    setStart(nodeID) {
+        this.start = nodeID;
+    }
+
+    setEnd(nodeID) {
+        this.end = nodeID;
     }
 }
