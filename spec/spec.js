@@ -42,6 +42,35 @@ describe('Sirkit', function() {
         }
 
         window.traverser = Traverser();
+
+        window.hideProp = function hideProp(obj, props) {
+            let returnObj = {};
+
+            for(let prop in obj){
+                if(props.indexOf(prop) < 0){
+                    returnObj[prop] = obj[prop];
+                }
+            }
+        };
+
+        window.selectProp = function selectProp(obj, props) {
+            let returnObj = {};
+
+            for(let prop in obj){
+                if(props.indexOf(prop) > -1){
+                    returnObj[prop] = obj[prop];
+                }
+            }
+        };
+
+        window.loopToBeEqualProps = function(arrInput, arrExpected, props) {
+            arrInput.forEach((item, idx) => {
+                expect(selectProp(item, props)).toEqual(selectProp(arrExpected[idx], props));
+            });
+        };
+
+        // Reset the Node counter for each test
+        Node.resetCounter();
     });
     
     describe('Utility functions', function() {
@@ -240,7 +269,11 @@ describe('Sirkit', function() {
                     circuit2.setGround([10,30]);
 
                     traverser._checkClosedCircuit(board);
-                    expect(board.circuits[1].nodes.sort()).toEqual(circuit2.nodes.sort());
+
+                    let boardNodes = board.circuits[1].nodes,
+                        expectedNodes = circuit2.nodes;
+
+                    loopToBeEqualProps(boardNodes, expectedNodes, ['position', 'branches']);
                     expect(board.circuits[1].ground).toEqual(circuit2.ground);
 
                 });
@@ -494,7 +527,11 @@ describe('Sirkit', function() {
                     circuit1.addNode([1,2]);
                     circuit1.addNode([3,3]);
                     circuit1.setGround([2,2]);
-                    expect(circuit1.nodes).toEqual([new Node([1,2]), new Node([3,3])])
+
+                    let expectedNodes = [new Node([1,2]), new Node([3,3])];
+
+                    loopToBeEqualProps(circuit1.nodes, expectedNodes, ['position', 'branches']);
+                    expect(circuit1.ground).toEqual([2,2]);
                 });
             });
 
@@ -524,10 +561,29 @@ describe('Sirkit', function() {
                     circuit1.setGround([2,2]);
                     
                     circuit1.addToBoard();
-                    expect(board.circuits[0].nodes).toEqual([new Node([1,2]), new Node([3,3])]);
+
+                    let expectedNodes = [new Node([1,2]), new Node([3,3])];
+
+                    loopToBeEqualProps(board.circuits[0].nodes, expectedNodes, ['positions', 'branches']);
                     expect(board.circuits[0].ground).toEqual([2,2]);
                 });
+
+                it('should remove the ground node from the nodes field', function() {
+                    circuit1.addNode([0,0]);
+                    circuit1.setGround([0,0]);
+
+                    expect(circuit1.nodes.size).toBe(0);
+                });
             });
+        });
+
+        describe('Node', function() {
+
+            it('should create Node objects with id of \'Nx\', where x is an incrementing int', function(){
+                for(let x = 0; x < 10; x++){
+                    expect((new Node([0,0])).id).toBe('N'+x);
+                }
+            })
         });
 
     });
@@ -775,7 +831,7 @@ describe('Sirkit', function() {
                     expect(() => { traverser._traverseCircuit(); }).toThrowError('No Board object passed in');
                 });
 
-                it('should populate the right voltage and resistance values of all branches of a circuit', function(){
+                it('should populate the correct voltage and resistance values of all branches of a circuit', function(){
                     //traverser = Traverser({ debug: true });
 
                     let node1 = [5,0],
@@ -813,7 +869,8 @@ describe('Sirkit', function() {
                     traverser._checkClosedCircuit(board);
                     traverser._traverseCircuit(board);
 
-                    let [N1, N2] = board.circuits[0].nodes,
+                    let N1 = board.circuits[0].nodes.get('N0'),
+                        N2 = board.circuits[0].nodes.get('N1'),
 
                         N1B1 = new Branch(),
                         N1B2 = new Branch(),
@@ -826,10 +883,22 @@ describe('Sirkit', function() {
                         N1B1.addV(-5);
                         N1B2.addR(100);
                         N1B3.addR(50);
+                        for(let branch of [N1B1, N1B2, N1B3]){
+                            branch.setStart('N0');
+                        }
+                        N1B1.setEnd('ground');
+                        N1B2.setEnd('N1');
+                        N1B3.setEnd('N1');
 
                         N2B1.addR(20);
                         N2B2.addR(100);
                         N2B3.addR(50);
+                        for(let branch of [N2B1, N2B2, N2B3]){
+                            branch.setStart('N1');
+                        }
+                        N2B1.setEnd('ground');
+                        N2B2.setEnd('N0');
+                        N2B3.setEnd('N0');
 
                     // Sort by Voltage first, then Resistance
                     function branchSorter(b1, b2) {
@@ -846,11 +915,12 @@ describe('Sirkit', function() {
                         }
                     }
 
-                    expect(N1.branches.sort(branchSorter)).toEqual([N1B1, N1B2, N1B3].sort(branchSorter));
-                    expect(N2.branches.sort(branchSorter)).toEqual([N2B1, N2B2, N2B3].sort(branchSorter));
+                    let N1Branches = [N1B1, N1B2, N1B3].sort(branchSorter),
+                        N2Branches = [N2B1, N2B2, N2B3].sort(branchSorter);
 
+                    expect(N1.branches.sort(branchSorter)).toEqual(N1Branches);
+                    expect(N2.branches.sort(branchSorter)).toEqual(N2Branches);
                 });
-
             });
         });
 
