@@ -31,3 +31,5 @@ Node.resetCounter = function() {
 Node.getID = function() {
     return 'N' + (Node.counter++);
 };
+
+module.exports = Node;

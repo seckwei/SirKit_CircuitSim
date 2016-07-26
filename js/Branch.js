@@ -30,3 +30,5 @@ class Branch {
         this.end = nodeID;
     }
 }
+
+module.exports = Branch;
